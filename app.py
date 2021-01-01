@@ -178,6 +178,7 @@ def postwedding():
 @app.route("/api/bookmarkvenue", methods=['POST'])
 @auth_required
 def bookmarkvenue():
+    #TODO Use VID
     """
     Adds venue to user's bookmarked venues
     requires "name"
@@ -186,7 +187,7 @@ def bookmarkvenue():
         
     if request.form["name"]:
         if db.session.query(Venue).filter_by(name=request.form["name"]).first():
-            if db.session.query(Venue).filter_by(name=request.form["name"]).count == 0:
+            if db.session.query(Venue).filter_by(name=request.form["name"]).count == 1:
                 venue_id = db.session.query(Venue).filter_by(name=request.form["name"]).first()
                 print(venue_id)
                 new_bookmarked_venue = VenueBookmark(venue_id.vid,current_user.id)
@@ -213,15 +214,16 @@ def venuesearch():
     requires "search_terms"
     """
     if request.form["search_terms"]:
-        results = db.session.query(Venue).filter_by(name=Venue.name.like("%" + request.form["search_terms"] + "%"), 
-        description=Venue.description.like("%" + request.form["search_terms"] + "%"),
-        state=Venue.state.like("%" + request.form["search_terms"] + "%"), 
-        city=Venue.city.like("%" + request.form["search_terms"] + "%")).all()
+        results = db.session.query(Venue).filter(Venue.name.like("%" + request.form["search_terms"] + "%")).all()
+    
         if results:
             return results, 201 
         else:
             return {"message": "No venues found"}, 400 
         
-
+"""
+        Venue.description.like("%" + request.form["search_terms"] + "%"),
+        Venue.state.like("%" + request.form["search_terms"] + "%"), 
+        Venue.city.like("%" + request.form["search_terms"] + "%")).all()"""
 
 api.add_resource(HelloApiHandler, '/flask/hello')
