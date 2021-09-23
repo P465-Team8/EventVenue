@@ -8,7 +8,7 @@ function App() {
 
   useEffect(()=>{
     //var backend = "http://localhost:5000/flask/hello"
-    var backend =  "https://react-flask-heroku-tutorial.herokuapp.com/"
+    var backend =  "https://lonelyweddings.herokuapp.com/flask/hello"
     axios.get(backend).then(response => {
       console.log("SUCCESS", response)
       setGetMessage(response)
