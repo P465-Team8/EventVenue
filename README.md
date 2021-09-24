@@ -1,6 +1,14 @@
 # EventVenue
 This is P465 Team 8 repository for the Event/Venue project.
 
+## Current State of Project
+Right now, the code is the result of following [this](https://towardsdatascience.com/build-deploy-a-react-flask-app-47a89a5d17d9) tutorial. Running locally, App.js runs at http://localhost:3000/ and going to httplocalhost:3000/flask/hello works as the example. On Heroku, the index page does not load, however going to /flask/hello does work, indicating that at least flask is running.
+
+## Using Git
+1. Do your work in a [new branch](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging).
+2. If working on a ticket, name the branch \[TicketID]-Ticket_Name. Otherwise give it a descriptive name.
+3. When done and all tests are passing, [merge branch](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging) to main. Doing a code review isn't required, but also wouldn't be a bad idea.
+
 ## Running locally
 1. Uncomment lines 3 and 7 for handlng cors in app.py.
 2. Comment out heroku backend variable and uncomment local backend variable in [App.js](./frontend/src/App.js)
@@ -13,10 +21,6 @@ This is P465 Team 8 repository for the Event/Venue project.
 ~/EventVenueProject$ cd frontend
 ~/EventVenueProject/frontend$ npm start
 ```
-
-## Using Git
-1. Do your work in a [new branch](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging).
-2. If working on a ticket, name the branch \[TicketID]-Ticket_Name. Otherwise give it a descriptive name.
 
 ## Setting up Heroku
 1. Sign up for [heroku](https://heroku.com).
@@ -37,3 +41,4 @@ This is P465 Team 8 repository for the Event/Venue project.
     $ git push heroku branchname:main
     ```
 5. Open app at https://lonelyweddings.herokuapp.com/flask/hello
+
