@@ -9,6 +9,14 @@ Right now, the code is the result of following [this](https://towardsdatascience
 2. If working on a ticket, name the branch \[TicketID]-Ticket_Name. Otherwise give it a descriptive name.
 3. When done and all tests are passing, [merge branch](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging) to main. Doing a code review isn't required, but also wouldn't be a bad idea.
 
+## Python Virtual Environment
+1. Set up a python [virtual environment](https://docs.python.org/3/tutorial/venv.html) in your working directory.
+2. Install required python packages with
+    ```console
+    $ pip install -r requirements
+    ```
+3. Update requirements.txt when installing new packages.
+
 ## Running locally
 1. Uncomment lines 3 and 7 for handlng cors in app.py.
 2. Comment out heroku backend variable and uncomment local backend variable in [App.js](./frontend/src/App.js)
