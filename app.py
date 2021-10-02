@@ -5,11 +5,16 @@ from api.HelloApiHandler import HelloApiHandler
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__, static_url_path='', static_folder='frontend/build')
-app.secret_key = b'group8ssupersecretkey'
 
 CORS(app) #comment this on deployment
 
 
+# Configure JWT
+app.config['SECRET_KEY'] = 'group8secret'
+app.config['JWT_ACCES_LIFESPAN'] = {'hours': 24}
+app.config['JWT_REFRESH_LIFESPAN'] = {'days': 30}
+
+# Configure database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://huggcxzybmdegm:401d28ec5d40d5a1924bf74add6adde719115f7e3276fc4a16a4c69db1aca1d0@ec2-52-207-47-210.compute-1.amazonaws.com:5432/d49i5f0i3s50ib'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
