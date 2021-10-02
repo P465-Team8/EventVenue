@@ -13,7 +13,7 @@ Right now, the code is the result of following [this](https://towardsdatascience
 1. Set up a python [virtual environment](https://docs.python.org/3/tutorial/venv.html) in your working directory.
 2. Install required python packages with
     ```console
-    $ pip install -r requirements
+    $ pip install -r requirements.txt
     ```
 3. Update requirements.txt when installing new packages.
 
