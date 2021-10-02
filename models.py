@@ -38,11 +38,24 @@ class User(db.Model):
         return str(self.id)
 
     @property
+    def username(self):
+        return self.email
+
+    @property
     def password(self):
+        """
+        Password property that is used by Flask-Praetorian.
+        Enables authentication without renaming our password_hash column.
+        """
         return self.password_hash
 
     @property
     def rolenames(self):
+        """
+        Flask-Praetorian requires the rolenames property, but no roles are needed.
+        It is possible to disable this requirement in Flask-Praetorian, which should
+        be done at some point.
+        """
         return []
 
     def is_valid(self):

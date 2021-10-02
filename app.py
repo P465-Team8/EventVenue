@@ -3,7 +3,7 @@ from flask_restful import Api
 from flask_cors import CORS #comment this on deployment
 from api.HelloApiHandler import HelloApiHandler
 from flask_sqlalchemy import SQLAlchemy
-from flask_praetorian import Praetorian
+from flask_praetorian import Praetorian, auth_required, current_user
 
 app = Flask(__name__, static_url_path='', static_folder='frontend/build')
 
@@ -53,11 +53,24 @@ def register():
 
 @app.route("/auth/login", methods=['POST'])
 def login():
+    """
+    Returns the JWT token if the given user is authenticated.
+    Requires "email" and "password" fields in POST request.
+    """
     if request.form["email"] and request.form["password"]:
         user = guard.authenticate(request.form["email"], request.form["password"])
-        ret = {'access_token': str(guard.encode_jwt_token(user))}
+        ret = {'access_token': guard.encode_jwt_token(user)}
         return ret, 200
     else:
         return {"error": "Request must contain email and password"}, 400
+
+@app.route("/myprofile", methods=['GET'])
+@auth_required
+def myprofile():
+    """
+    Returns the logged-in user's information
+    """
+    user = db.session.query(User).filter_by(email=current_user().username).one_or_none()
+    return {"email":user.email, "first_name": user.first_name, "last_name":user.last_name}, 200
 
 api.add_resource(HelloApiHandler, '/flask/hello')
