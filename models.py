@@ -35,7 +35,15 @@ class User(db.Model):
 
     @property
     def identity(self):
-        return self.id
+        return str(self.id)
+
+    @property
+    def password(self):
+        return self.password_hash
+
+    @property
+    def rolenames(self):
+        return []
 
     def is_valid(self):
         return self.is_active
