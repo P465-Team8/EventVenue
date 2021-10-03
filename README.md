@@ -2,7 +2,7 @@
 This is P465 Team 8 repository for the Event/Venue project.
 
 ## Current State of Project
-Right now, the code is the result of following [this](https://towardsdatascience.com/build-deploy-a-react-flask-app-47a89a5d17d9) tutorial. Running locally, App.js runs at http://localhost:3000/ and going to httplocalhost:3000/flask/hello works as the example. On Heroku, the index page does not load, however going to /flask/hello does work, indicating that at least flask is running.
+Right now, the code is the result of following [this](https://towardsdatascience.com/build-deploy-a-react-flask-app-47a89a5d17d9) tutorial. Running locally, App.js runs at http://localhost:3000/ and going to httplocalhost:3000/flask/hello works as the example. On Heroku, the index page does not load, however going to /flask/hello does work, indicating that at least flask is running. Registration, login, and a personal profile routes have all been added to the backend.
 
 ## Using Git
 1. Do your work in a [new branch](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging).
