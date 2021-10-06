@@ -27,18 +27,31 @@ class User(db.Model):
 
     @classmethod
     def lookup(cls, email):
+        """
+        Used by Flask-Praetorian
+        """
         return cls.query.filter_by(email=email).one_or_none()
 
     @classmethod
     def identify(cls, id):
+        """
+        Used by Flask-Praetorian
+        """
         return cls.query.get(id)
 
     @property
     def identity(self):
+        """
+        Used by Flask-Praetorian
+        """
         return str(self.id)
 
     @property
     def username(self):
+        """
+        Username property that is used by Flask-Praetorian.
+        Enables authentication with email instead of a separate username.
+        """
         return self.email
 
     @property
