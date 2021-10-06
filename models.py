@@ -1,9 +1,11 @@
 from sqlalchemy.sql.expression import desc
+from sqlalchemy.sql.sqltypes import DateTime
 from app import db
 from sqlalchemy.dialects.postgresql import UUID, ARRAY, DATERANGE
 from sqlalchemy import ForeignKey
 import uuid
 from psycopg2.extras import DateRange
+from datetime import datetime
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -13,7 +15,7 @@ class User(db.Model):
     last_name = db.Column(db.String(), nullable=False)
     email = db.Column(db.String(), unique=True, nullable=False)
     password_hash = db.Column(db.String(), nullable=False)
-    is_active = db.Column(db.Boolean, default=True, server_default='true')
+    is_active = db.Column(db.Boolean(), default=True, server_default='true')
 
     def __init__(self, first_name, last_name, email, password_hash):
         self.id = uuid.uuid4()
@@ -23,7 +25,7 @@ class User(db.Model):
         self.password_hash = password_hash
 
     def __repr__(self) -> str:
-        return f'<id {self.id}>'
+        return f'<User {self.id}>'
 
     def __str__(self) -> str:
         return self.first_name + " " + self.last_name
@@ -87,7 +89,7 @@ class Venue(db.Model):
     street_address = db.Column(db.String(), nullable=False)
     city = db.Column(db.String(), nullable=False)
     state = db.Column(db.String(), nullable=False)
-    zip = db.Column(db.Integer, nullable=False)
+    zip = db.Column(db.Integer(), nullable=False)
     pictures = db.Column(ARRAY(db.String()), nullable=False)
 
     def __init__(self, owner:UUID, name:str, description:str, street_address:str, city:str, state:str, zip:int, pictures:'list[str]'):
@@ -102,7 +104,7 @@ class Venue(db.Model):
         self.pictures = pictures
 
     def __repr__(self) -> str:
-        return f'<vid {self.vid}>'
+        return f'<Venue {self.vid}>'
 
     def __str__(self) -> str:
         return self.name + " - " + self.owner
@@ -121,7 +123,7 @@ class Reservation(db.Model):
         self.holder = holder
 
     def __repr__(self) -> str:
-        return f'<rid {self.rid}>'
+        return f'<Reservation {self.rid}>'
 
     def __str__(self) -> str:
         return str(self.res_dates) + " " + str(self.res_venue) + " " + str(self.holder)
@@ -132,7 +134,31 @@ class Wedding(db.Model):
     wid = db.Column(UUID(as_uuid=True), primary_key=True)
     host = db.Column(UUID(as_uuid=True),ForeignKey('users.id'), nullable=False)
     description = db.Column(db.String(), nullable=False)
-    is_public = db.Column(db.Boolean, nullable=False, default=False)
+    is_public = db.Column(db.Boolean(), nullable=False, default=False)
     wedding_reservation = db.Column(UUID(as_uuid=True), ForeignKey('reservations.rid'), nullable=False)
+    wedding_datetime = db.Column(db.DateTime(), nullable=False)
+
+    def __init__(self, host:UUID, description:str, is_public:bool, wedding_reservation:UUID, wedding_datetime:datetime):
+        self.wid = uuid.uuid4()
+        self.host = host
+        self.description = description
+        self.is_public = is_public
+        self.wedding_reservation = wedding_reservation
+        self.wedding_datetime = wedding_datetime
+
+    def __repr__(self) -> str:
+        return f'<Wedding {self.wid}>'
+
+    def __str__(self) -> str:
+        return str(self.host) + " " + str(self.res_venue) + " " + str(self.holder)
+
+class VenueBookmark(db.Model):
+    bookmarked_venue = db.Column(UUID(as_uuid=True), ForeignKey('venues.vid'),primary_key=True)
+    user_id = db.Column(UUID(as_uuid=True), ForeignKey('users.id'), primary_key=True)
+
+    def __init__(self, bookmarked_venue:UUID, user_id:UUID):
+        self.bookmarked_venue = bookmarked_venue
+        self.user_id = user_id
+
 
     
