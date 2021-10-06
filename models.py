@@ -1,6 +1,6 @@
 from sqlalchemy.sql.expression import desc
 from app import db
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, ARRAY, DATERANGE
 from sqlalchemy import ForeignKey
 import uuid
 
@@ -87,7 +87,7 @@ class Venue(db.Model):
     city = db.Column(db.String(), nullable=False)
     state = db.Column(db.String(), nullable=False)
     zip = db.Column(db.Integer, nullable=False)
-    pictures = db.Column(db.ARRAY(db.String()), nullable=False)
+    pictures = db.Column(ARRAY(db.String()), nullable=False)
 
     def __init__(self, owner:UUID, name:str, description:str, street_address:str, city:str, state:str, zip:int, pictures:'list[str]'):
         self.vid = uuid.uuid4()
@@ -105,3 +105,19 @@ class Venue(db.Model):
 
     def __str__(self) -> str:
         return self.first_name + " " + self.last_name
+
+class Reservation(db.Model):
+    __tablename__ = 'reservations'
+
+    rid = db.Column(UUID(as_uuid=True), primary_key=True)
+    res_dates = db.Column(DATERANGE, nullable=False)
+    res_venue = db.Column(UUID(as_uuid=True), ForeignKey('venues.vid'))
+    holder = db.Column(UUID(as_uuid=True), ForeignKey('users.id'))
+
+class Wedding(db.Model):
+    __tablename__ = 'weddings'
+
+    wid = db.Column(UUID(as_uuid=True), primary_key=True)
+    host = db.Column(UUID(as_uuid=True),ForeignKey('users.id'), nullable=False)
+    description = db.Column(db.String(), nullable=False)
+    is_public = db.Column(db.Boolean, nullable=False, default=False)
