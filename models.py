@@ -99,3 +99,9 @@ class Venue(db.Model):
         self.state = state
         self.zip = zip
         self.pictures = pictures
+
+    def __repr__(self) -> str:
+        return f'<vid {self.vid}>'
+
+    def __str__(self) -> str:
+        return self.first_name + " " + self.last_name
