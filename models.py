@@ -1,5 +1,7 @@
+from sqlalchemy.sql.expression import desc
 from app import db
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import ForeignKey
 import uuid
 
 class User(db.Model):
@@ -73,3 +75,27 @@ class User(db.Model):
 
     def is_valid(self):
         return self.is_active
+
+class Venue(db.Model):
+    __tablename__ = 'venues'
+
+    vid = db.Column(UUID(as_uuid=True), primary_key=True)
+    owner = db.Column(UUID(as_uuid=True),ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String(), unique=True, nullable=False)
+    description = db.Column(db.String(), nullable=False)
+    street_address = db.Column(db.String(), nullable=False)
+    city = db.Column(db.String(), nullable=False)
+    state = db.Column(db.String(), nullable=False)
+    zip = db.Column(db.Integer, nullable=False)
+    pictures = db.Column(db.ARRAY(db.String()), nullable=False)
+
+    def __init__(self, owner:UUID, name:str, description:str, street_address:str, city:str, state:str, zip:int, pictures:'list[str]'):
+        self.vid = uuid.uuid4()
+        self.owner = owner
+        self.name = name
+        self.description = description
+        self.street_address = street_address
+        self.city = city
+        self.state = state
+        self.zip = zip
+        self.pictures = pictures
