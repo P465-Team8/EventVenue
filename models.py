@@ -3,6 +3,7 @@ from app import db
 from sqlalchemy.dialects.postgresql import UUID, ARRAY, DATERANGE
 from sqlalchemy import ForeignKey
 import uuid
+from psycopg2.extras import DateRange
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -104,15 +105,26 @@ class Venue(db.Model):
         return f'<vid {self.vid}>'
 
     def __str__(self) -> str:
-        return self.first_name + " " + self.last_name
+        return self.name + " - " + self.owner
 
 class Reservation(db.Model):
     __tablename__ = 'reservations'
 
     rid = db.Column(UUID(as_uuid=True), primary_key=True)
     res_dates = db.Column(DATERANGE, nullable=False)
-    res_venue = db.Column(UUID(as_uuid=True), ForeignKey('venues.vid'))
-    holder = db.Column(UUID(as_uuid=True), ForeignKey('users.id'))
+    res_venue = db.Column(UUID(as_uuid=True), ForeignKey('venues.vid'), nullable=False)
+    holder = db.Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+
+    def __init__(self, res_dates:DateRange, res_venue:UUID, holder:UUID):
+        self.res_dates = res_dates
+        self.res_venue = res_venue
+        self.holder = holder
+
+    def __repr__(self) -> str:
+        return f'<rid {self.rid}>'
+
+    def __str__(self) -> str:
+        return str(self.res_dates) + " " + str(self.res_venue) + " " + str(self.holder)
 
 class Wedding(db.Model):
     __tablename__ = 'weddings'
@@ -121,3 +133,6 @@ class Wedding(db.Model):
     host = db.Column(UUID(as_uuid=True),ForeignKey('users.id'), nullable=False)
     description = db.Column(db.String(), nullable=False)
     is_public = db.Column(db.Boolean, nullable=False, default=False)
+    wedding_reservation = db.Column(UUID(as_uuid=True), ForeignKey('reservations.rid'), nullable=False)
+
+    
