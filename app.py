@@ -33,7 +33,7 @@ db.create_all()
 def serve(path):
     return send_from_directory(app.static_folder,'index.html')
 
-@app.route("/auth/register", methods=['POST'])
+@app.route("/api/auth/register", methods=['POST'])
 def register():
     """
     Registers a new user. 
@@ -51,7 +51,7 @@ def register():
     else:
         return {"error": "Form requires first_name, last_name, email, and password."}, 400
 
-@app.route("/auth/login", methods=['POST'])
+@app.route("/api/auth/login", methods=['POST'])
 def login():
     """
     Returns the JWT token if the given user is authenticated.
@@ -64,7 +64,7 @@ def login():
     else:
         return {"error": "Request must contain email and password"}, 400
 
-@app.route("/myprofile", methods=['GET'])
+@app.route("/api/myprofile", methods=['GET'])
 @auth_required
 def myprofile():
     """
