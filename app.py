@@ -1,4 +1,6 @@
 from flask import Flask, send_from_directory, request
+from sqlalchemy.sql.sqltypes import JSON
+from werkzeug import useragents
 from flask_restful import Api
 from flask_cors import CORS #comment this on deployment
 from api.HelloApiHandler import HelloApiHandler
@@ -23,7 +25,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Initialize flask-praetorian and create database
-from models import User
+from models import User, Venue, Wedding
 with app.app_context():
     guard.init_app(app, User)
 db.create_all()
@@ -72,5 +74,39 @@ def myprofile():
     """
     user = db.session.query(User).filter_by(email=current_user().username).one_or_none()
     return {"email":user.email, "first_name": user.first_name, "last_name":user.last_name}, 200
+
+@app.route("/api/PostVenue", methods=['POSTVENUE'])
+def PostVenue():
+    """
+    Posts Venue to Platform
+    Post requiest requires "name", "description", "street_address", "city", "state", "zipcode", "pictures" 
+    """
+    if request.form["name"] and request.form["description"] and request.form["street_address"] and request.form["city"] and request.form["state"] and request.form["zipcode"]:
+        if db.session.query(Venue).filter_by(street_address=request.form["street_address"], zipcode=request.form["zipcode"]).count() < 1:
+            new_Venue = Venue(current_user().id,request.form["name"],request.form["description"], request.form["street_address"], request.form["city"], request.form["state"], request.form["zipcode"], request.form["pictures"])
+            db.sessions.add(new_Venue)
+            db.sessions.commit()
+            return {"message": f"Venue {request.form['name']}"}, 201
+        else:
+            return {"error": "Venue already exists"}, 400
+    else:
+        return {"error": "Form requires name, description, street_address, city, state, zipcode, pictures."}, 400
+
+@app.route("/api/PostWedding", methods=['POSTWedding'])
+def PostVenue():
+    """
+    Posts Wedding to Platform
+    Post request requires "description", "is_public", "wedding_reservation", "wedding_datetime"
+    """
+    if request.form["description"] and request.form["is_public"] and request.form["wedding_reservation"] and request.form["wedding_datetime"]:
+        if db.session.query(Wedding).filter_by(wedding_reservation=request.form["wedding_reservation"]).count() == 1: 
+            new_wedding = Wedding(current_user.id, request.form["description"], request.form["is_public"], request.form["wedding_reservation"], request.form["wedding_datetime"])
+            db.sessions.add(new_wedding)
+            db.sessions.commit()
+            return {"message": f"Wedding {request.form['description']}"}, 201
+        else:
+            return {"error": "reservation does not exist"}, 400
+    else:
+        return {"error": "Form requires description, description, is_public, wedding_reservation, wedding_datetime."}, 400
 
 api.add_resource(HelloApiHandler, '/flask/hello')
