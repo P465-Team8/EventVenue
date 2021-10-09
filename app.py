@@ -1,4 +1,5 @@
 from flask import Flask, send_from_directory, request
+from flask.signals import request_tearing_down
 from sqlalchemy.sql.sqltypes import JSON
 from werkzeug import useragents
 from flask_restful import Api
@@ -25,7 +26,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Initialize flask-praetorian and create database
-from models import User, Venue, Wedding
+from models import User, Venue, VenueBookmark, Wedding
 with app.app_context():
     guard.init_app(app, User)
 db.create_all()
@@ -75,8 +76,8 @@ def myprofile():
     user = db.session.query(User).filter_by(email=current_user().username).one_or_none()
     return {"email":user.email, "first_name": user.first_name, "last_name":user.last_name}, 200
 
-@app.route("/api/PostVenue", methods=['POSTVENUE'])
-def PostVenue():
+@app.route("/api/postvenue", methods=['POSTVENUE'])
+def postvenue():
     """
     Posts Venue to Platform
     Post requiest requires "name", "description", "street_address", "city", "state", "zipcode", "pictures" 
@@ -92,8 +93,8 @@ def PostVenue():
     else:
         return {"error": "Form requires name, description, street_address, city, state, zipcode, pictures."}, 400
 
-@app.route("/api/PostWedding", methods=['POSTWedding'])
-def PostVenue():
+@app.route("/api/postwedding", methods=['POSTWEDDING'])
+def postwedding():
     """
     Posts Wedding to Platform
     Post request requires "description", "is_public", "wedding_reservation", "wedding_datetime"
@@ -103,10 +104,27 @@ def PostVenue():
             new_wedding = Wedding(current_user.id, request.form["description"], request.form["is_public"], request.form["wedding_reservation"], request.form["wedding_datetime"])
             db.sessions.add(new_wedding)
             db.sessions.commit()
-            return {"message": f"Wedding {request.form['description']}"}, 201
+            return {"message": f"Wedding {request.form['description']}"}, 202
         else:
             return {"error": "reservation does not exist"}, 400
     else:
         return {"error": "Form requires description, description, is_public, wedding_reservation, wedding_datetime."}, 400
+
+@app.route("/api/bookmarkvenue", methods=['BOOKMARK'])
+def bookmarkvenue():
+    """
+    Adds venue to user's bookmarked venues
+    requires "bookmarked_venue"
+    """
+    if request.form["bookmarked_venue"]:
+        if db.session.query(VenueBookmark).filter_by(bookmarked_venue=request.form["bookmarked_venue"]).count() < 1:
+            new_bookmarked_wedding = VenueBookmark(request.form["bookmarked_venue"],current_user.id)
+            return {"message": "Venue bookmarked"}, 201
+        else:
+            db.session.query(VenueBookmark).filter_by(bookmarked_venue=request.form["bookmarked_venue"],user_id=current_user.id).delete()
+            return {"message": "Venue unbookmarked"}, 201
+    else:
+        return {"error": "Form Requires bookmarked_venue"}, 400
+
 
 api.add_resource(HelloApiHandler, '/flask/hello')
