@@ -89,10 +89,10 @@ class Venue(db.Model):
     street_address = db.Column(db.String(), nullable=False)
     city = db.Column(db.String(), nullable=False)
     state = db.Column(db.String(), nullable=False)
-    zip = db.Column(db.Integer(), nullable=False)
+    zipcode = db.Column(db.Integer(), nullable=False)
     pictures = db.Column(ARRAY(db.String()), nullable=False)
 
-    def __init__(self, owner:UUID, name:str, description:str, street_address:str, city:str, state:str, zip:int, pictures:'list[str]'):
+    def __init__(self, owner:UUID, name:str, description:str, street_address:str, city:str, state:str, zipcode:int, pictures:'list[str]'):
         self.vid = uuid.uuid4()
         self.owner = owner
         self.name = name
@@ -100,7 +100,7 @@ class Venue(db.Model):
         self.street_address = street_address
         self.city = city
         self.state = state
-        self.zip = zip
+        self.zipcode = zipcode
         self.pictures = pictures
 
     def __repr__(self) -> str:
