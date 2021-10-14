@@ -76,52 +76,64 @@ def myprofile():
     user = db.session.query(User).filter_by(email=current_user().username).one_or_none()
     return {"email":user.email, "first_name": user.first_name, "last_name":user.last_name}, 200
 
-@app.route("/api/postvenue", methods=['POSTVENUE'])
+@app.route("/api/postvenue", methods=['POST'])
+@auth_required
 def postvenue():
     """
     Posts Venue to Platform
     Post requiest requires "name", "description", "street_address", "city", "state", "zipcode", "pictures" 
     """
     if request.form["name"] and request.form["description"] and request.form["street_address"] and request.form["city"] and request.form["state"] and request.form["zipcode"]:
-        if db.session.query(Venue).filter_by(street_address=request.form["street_address"], zipcode=request.form["zipcode"]).count() < 1:
+        if db.session.query(Venue).filter_by(name=request.form["name"], street_address=request.form["street_address"], zipcode=request.form["zipcode"]).count() < 1:
             new_Venue = Venue(current_user().id,request.form["name"],request.form["description"], request.form["street_address"], request.form["city"], request.form["state"], request.form["zipcode"], request.form["pictures"])
-            db.sessions.add(new_Venue)
-            db.sessions.commit()
+            db.session.add(new_Venue)
+            db.session.commit()
             return {"message": f"Venue {request.form['name']}"}, 201
         else:
             return {"error": "Venue already exists"}, 400
     else:
         return {"error": "Form requires name, description, street_address, city, state, zipcode, pictures."}, 400
 
-@app.route("/api/postwedding", methods=['POSTWEDDING'])
+@app.route("/api/postwedding", methods=['POST'])
+@auth_required
 def postwedding():
     """
     Posts Wedding to Platform
     Post request requires "description", "is_public", "wedding_reservation", "wedding_datetime"
     """
+    
+    #TODO Create reservation instance for wedding
+
     if request.form["description"] and request.form["is_public"] and request.form["wedding_reservation"] and request.form["wedding_datetime"]:
         if db.session.query(Wedding).filter_by(wedding_reservation=request.form["wedding_reservation"]).count() == 1: 
             new_wedding = Wedding(current_user.id, request.form["description"], request.form["is_public"], request.form["wedding_reservation"], request.form["wedding_datetime"])
-            db.sessions.add(new_wedding)
-            db.sessions.commit()
+            db.session.add(new_wedding)
+            db.session.commit()
             return {"message": f"Wedding {request.form['description']}"}, 202
         else:
             return {"error": "reservation does not exist"}, 400
     else:
         return {"error": "Form requires description, description, is_public, wedding_reservation, wedding_datetime."}, 400
 
-@app.route("/api/bookmarkvenue", methods=['BOOKMARK'])
+@app.route("/api/bookmarkvenue", methods=['POST'])
+@auth_required
 def bookmarkvenue():
     """
     Adds venue to user's bookmarked venues
     requires "bookmarked_venue"
     """
+
+    #TODO Get Venue vid from information passed by front-end
+
     if request.form["bookmarked_venue"]:
-        if db.session.query(VenueBookmark).filter_by(bookmarked_venue=request.form["bookmarked_venue"]).count() < 1:
-            new_bookmarked_wedding = VenueBookmark(request.form["bookmarked_venue"],current_user.id)
+        if db.session.query(VenueBookmark).filter_by(bookmarked_venue=request.form["bookmarked_venue"], user_id=current_user.id).count() < 1:
+            new_bookmarked_venue = VenueBookmark(request.form["bookmarked_venue"],current_user.id)
+            db.session.add(new_bookmarked_venue)
+            db.session.commit()
             return {"message": "Venue bookmarked"}, 201
         else:
             db.session.query(VenueBookmark).filter_by(bookmarked_venue=request.form["bookmarked_venue"],user_id=current_user.id).delete()
+            db.session.commit()
             return {"message": "Venue unbookmarked"}, 201
     else:
         return {"error": "Form Requires bookmarked_venue"}, 400
