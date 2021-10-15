@@ -22,8 +22,11 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    formData1.append("email", emailRef);
-    formData1.append("password", passwordRef);
+    //console.log(emailRef.current.value);
+    //console.log(passwordRef.current.value);
+
+    formData1.append("email", emailRef.current.value);
+    formData1.append("password", passwordRef.current.value);
 
     setError("");
     setLoading(true);
@@ -75,7 +78,7 @@ export default function Login() {
                   </Form.Group>
                   <Form.Group id="password">
                     <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" required></Form.Control>
+                    <Form.Control type="password" ref={passwordRef} required></Form.Control>
                   </Form.Group>
                   <Button
                     style={{ marginTop: "20px" }}

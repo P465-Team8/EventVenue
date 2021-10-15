@@ -23,10 +23,10 @@ export default function Signup() {
     if (passwordRef.current.value !== passwordConfirmRef.current.value) {
       return setError("Passwords do not match");
     }
-    formData.append("first_name", firstName);
-    formData.append("last_name", lastName);
-    formData.append("email", emailRef);
-    formData.append("password", passwordRef);
+    formData.append("first_name", firstName.current.value);
+    formData.append("last_name", lastName.current.value);
+    formData.append("email", emailRef.current.value);
+    formData.append("password", passwordRef.current.value);
 
     setError("");
     setLoading(true);
