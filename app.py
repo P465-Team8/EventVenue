@@ -164,7 +164,4 @@ def venuesearch():
         
 
 
-
-
-
 api.add_resource(HelloApiHandler, '/flask/hello')
