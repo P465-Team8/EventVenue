@@ -1,12 +1,16 @@
+import re
 from flask import Flask, send_from_directory, request
 from flask.signals import request_tearing_down
+from sqlalchemy.sql.operators import like_op
 from sqlalchemy.sql.sqltypes import JSON
+from sqlalchemy.util.langhelpers import MemoizedSlots
 from werkzeug import useragents
 from flask_restful import Api
 from flask_cors import CORS #comment this on deployment
 from api.HelloApiHandler import HelloApiHandler
 from flask_sqlalchemy import SQLAlchemy
 from flask_praetorian import Praetorian, auth_required, current_user
+
 
 app = Flask(__name__, static_url_path='', static_folder='frontend/build')
 
@@ -120,14 +124,15 @@ def postwedding():
 def bookmarkvenue():
     """
     Adds venue to user's bookmarked venues
-    requires "bookmarked_venue"
+    requires "name"
     """
 
-    #TODO Get Venue vid from information passed by front-end
-
-    if request.form["bookmarked_venue"]:
-        if db.session.query(VenueBookmark).filter_by(bookmarked_venue=request.form["bookmarked_venue"], user_id=current_user.id).count() < 1:
-            new_bookmarked_venue = VenueBookmark(request.form["bookmarked_venue"],current_user.id)
+    #TODO Test
+        
+    if request.form["name"]:
+        if db.session.query(Venue).filter_by(name=request.form["name"]).count <= 1:
+            venue_id = db.session.query(Venue).filter_by(name=request.form["name"])
+            new_bookmarked_venue = VenueBookmark(venue_id,current_user.id)
             db.session.add(new_bookmarked_venue)
             db.session.commit()
             return {"message": "Venue bookmarked"}, 201
@@ -137,6 +142,29 @@ def bookmarkvenue():
             return {"message": "Venue unbookmarked"}, 201
     else:
         return {"error": "Form Requires bookmarked_venue"}, 400
+
+
+@app.route("/api/venuesearch", methods=['GET'])
+@auth_required
+def venuesearch():
+    """
+    Returns List of Compatible Venues
+    searches in "name", "description", "state", or "city"
+    requires "search_terms"
+    """
+    if request.form["search_terms"]:
+        results = db.session.query(Venue).filter_by(name=Venue.name.like("%" + request.form["search_terms"] + "%"), 
+        description=Venue.description.like("%" + request.form["search_terms"] + "%"),
+        state=Venue.state.like("%" + request.form["search_terms"] + "%"), 
+        city=Venue.city.like("%" + request.form["search_terms"] + "%")).all()
+        if results:
+            return results, 201 
+        else:
+            return {"message": "No venues found"}, 400 
+        
+
+
+
 
 
 api.add_resource(HelloApiHandler, '/flask/hello')
