@@ -1,8 +1,10 @@
+from contextlib import nullcontext
 import re
 import json
 from uuid import UUID
 from flask import Flask, send_from_directory, request
 from flask.signals import request_tearing_down
+from sqlalchemy.sql.elements import Null
 from sqlalchemy.sql.operators import like_op
 from sqlalchemy.sql.sqltypes import JSON, String
 from sqlalchemy.util.langhelpers import MemoizedSlots
@@ -95,10 +97,16 @@ def postvenue():
     """
     if request.form["name"] and request.form["description"] and request.form["street_address"] and request.form["city"] and request.form["state"] and request.form["zipcode"]:
         if db.session.query(Venue).filter_by(name=request.form["name"], street_address=request.form["street_address"], zipcode=request.form["zipcode"]).count() < 1:
-            new_Venue = Venue(current_user().id,request.form["name"],request.form["description"], request.form["street_address"], request.form["city"], request.form["state"], request.form["zipcode"], request.form["pictures"])
-            db.session.add(new_Venue)
-            db.session.commit()
-            return {"message": f"Venue {request.form['name']}"}, 201
+            if request.form["pictures"]:
+                new_Venue = Venue(current_user().id,request.form["name"],request.form["description"], request.form["street_address"], request.form["city"], request.form["state"], request.form["zipcode"], request.form["pictures"])
+                db.session.add(new_Venue)
+                db.session.commit()
+                return {"message": f"Venue {request.form['name']} with no picutures"}, 201
+            else:
+                new_Venue = Venue(current_user().id,request.form["name"],request.form["description"], request.form["street_address"], request.form["city"], request.form["state"], request.form["zipcode"], Null)
+                db.session.add(new_Venue)
+                db.session.commit()
+                return {"message": f"Venue {request.form['name']}"}, 201
         else:
             return {"error": "Venue already exists"}, 400
     else:
@@ -157,7 +165,7 @@ def postwedding():
     #TODO Create reservation instance for wedding
 
     if request.form["description"] and request.form["is_public"] and request.form["wedding_reservation"] and request.form["wedding_datetime"]:
-        if db.session.query(Wedding).filter_by(wedding_reservation=request.form["wedding_reservation"]).count() == 1: 
+        if db.session.query(Wedding).filter_by(wedding_reservation=request.form["wedding_reservation"]).count(id) == 1: 
             new_wedding = Wedding(current_user.id, request.form["description"], request.form["is_public"], request.form["wedding_reservation"], request.form["wedding_datetime"])
             db.session.add(new_wedding)
             db.session.commit()
@@ -175,21 +183,25 @@ def bookmarkvenue():
     requires "name"
     """
 
-    #TODO Test
         
     if request.form["name"]:
-        if db.session.query(Venue).filter_by(name=request.form["name"]).count <= 1:
-            venue_id = db.session.query(Venue).filter_by(name=request.form["name"])
-            new_bookmarked_venue = VenueBookmark(venue_id,current_user.id)
-            db.session.add(new_bookmarked_venue)
-            db.session.commit()
-            return {"message": "Venue bookmarked"}, 201
+        if db.session.query(Venue).filter_by(name=request.form["name"]).first():
+            if db.session.query(Venue).filter_by(name=request.form["name"]).count == 0:
+                venue_id = db.session.query(Venue).filter_by(name=request.form["name"]).first()
+                print(venue_id)
+                new_bookmarked_venue = VenueBookmark(venue_id.vid,current_user.id)
+                db.session.add(new_bookmarked_venue)
+                db.session.commit()
+                return {"message": "Venue bookmarked"}, 201
+            else:
+                venue_id = db.session.query(Venue).filter_by(name=request.form["name"]).first()
+                db.session.query(VenueBookmark).filter_by(bookmarked_venue=venue_id.vid).delete()
+                db.session.commit()
+                return {"message": "Venue unbookmarked"}, 201
         else:
-            db.session.query(VenueBookmark).filter_by(bookmarked_venue=request.form["bookmarked_venue"],user_id=current_user.id).delete()
-            db.session.commit()
-            return {"message": "Venue unbookmarked"}, 201
+            return {"message": "Venue does not exist"}, 400
     else:
-        return {"error": "Form Requires bookmarked_venue"}, 400
+        return {"error": "Form Requires name"}, 400
 
 
 @app.route("/api/venuesearch", methods=['GET'])
@@ -210,9 +222,6 @@ def venuesearch():
         else:
             return {"message": "No venues found"}, 400 
         
-
-
-
 
 
 api.add_resource(HelloApiHandler, '/flask/hello')
