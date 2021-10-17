@@ -1,8 +1,9 @@
 import re
+from uuid import UUID
 from flask import Flask, send_from_directory, request
 from flask.signals import request_tearing_down
 from sqlalchemy.sql.operators import like_op
-from sqlalchemy.sql.sqltypes import JSON
+from sqlalchemy.sql.sqltypes import JSON, String
 from sqlalchemy.util.langhelpers import MemoizedSlots
 from werkzeug import useragents
 from flask_restful import Api
@@ -10,6 +11,10 @@ from flask_cors import CORS #comment this on deployment
 from api.HelloApiHandler import HelloApiHandler
 from flask_sqlalchemy import SQLAlchemy
 from flask_praetorian import Praetorian, auth_required, current_user
+from psycopg2.extras import DateRange
+from datetime import datetime
+from dateutil.parser import isoparse
+
 
 
 app = Flask(__name__, static_url_path='', static_folder='frontend/build')
@@ -30,7 +35,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Initialize flask-praetorian and create database
-from models import User, Venue, VenueBookmark, Wedding
+from models import Reservation, User, Venue, VenueBookmark, Wedding
 with app.app_context():
     guard.init_app(app, User)
 db.create_all()
@@ -97,6 +102,37 @@ def postvenue():
             return {"error": "Venue already exists"}, 400
     else:
         return {"error": "Form requires name, description, street_address, city, state, zipcode, pictures."}, 400
+
+def create_reservation(start_date:str, end_date:str, venue_id:UUID, user_id:UUID) -> bool:
+    """
+    Reserves a venue for a given date range if it is available
+    Returns true on success, returns false otherwise
+    """
+    start_date = isoparse(start_date)
+    end_date = isoparse(end_date)
+    date_range = DateRange(lower=start_date, upper=end_date)
+    if db.session.query(Reservation).filter(Reservation.res_dates.op("&&")(date_range)).count() > 0:
+        return False
+    reservation = Reservation(res_dates=date_range, res_venue=venue_id, holder=user_id)
+    db.session.add(reservation)
+    db.session.commit()
+    return True
+
+@app.route("/api/venue/reservation", methods=['POST'])
+@auth_required
+def reserve_venue():
+    """
+    Reserves the venue for the given daterange
+    Expects start date, end date, venue vid
+    Dates should be ISO-8601 date strings
+    """
+    if request.form["start_date"] and request.form["end_date"] and request.form["venue_id"]:
+        if create_reservation(request.form["start_date"], request.form["end_date"], UUID(request.form["venue_id"]), current_user.id):
+            return {"message": "Reservation created"}, 201
+        else:
+            return {"error": "Timeslot unavailable"}, 400
+    else:
+        return {"error": "Form requires start_datetime, end_datetime, and venue_id"}, 400
 
 @app.route("/api/postwedding", methods=['POST'])
 @auth_required
