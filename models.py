@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID, ARRAY, DATERANGE
 from sqlalchemy import ForeignKey
 import uuid
 from psycopg2.extras import DateRange
+from datetime import datetime
 
 class User(db.Model):
     __tablename__ = 'users'
