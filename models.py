@@ -102,6 +102,19 @@ class Venue(db.Model):
         self.zipcode = zipcode
         self.pictures = pictures
 
+    def serialize(self) -> dict:
+        details_dict = {
+            "owner" : str(self.owner),
+            "name" : self.name,
+            "description" : self.description,
+            "street_address" : self.street_address,
+            "city" : self.city,
+            "state" : self.state,
+            "zipcode" : self.zipcode,
+            "pictures" : self.pictures
+        }
+        return details_dict
+
     def __repr__(self) -> str:
         return f'<Venue {self.vid}>'
 

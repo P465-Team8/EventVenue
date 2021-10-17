@@ -1,4 +1,5 @@
 import re
+import json
 from uuid import UUID
 from flask import Flask, send_from_directory, request
 from flask.signals import request_tearing_down
@@ -102,6 +103,17 @@ def postvenue():
             return {"error": "Venue already exists"}, 400
     else:
         return {"error": "Form requires name, description, street_address, city, state, zipcode, pictures."}, 400
+
+@app.route("/api/venue/<vid>", methods=['GET'])
+@auth_required
+def getvenue(vid):
+    """
+    Given a venue id as a path argument, returns all information on that venue
+    """
+    venue = db.session.query(Venue).filter_by(vid=vid).first()
+    if venue is None:
+        return {"error": f"Venue {vid} does not exist"}, 404
+    return {"venue" : venue.serialize()}, 200
 
 def create_reservation(start_date:str, end_date:str, venue_id:UUID, user_id:UUID) -> bool:
     """
