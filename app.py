@@ -2,6 +2,7 @@ from contextlib import nullcontext
 import re
 import json
 from uuid import UUID
+import uuid
 from flask import Flask, send_from_directory, request
 from flask.signals import request_tearing_down
 from sqlalchemy.sql.elements import Null
@@ -14,10 +15,9 @@ from flask_cors import CORS #comment this on deployment
 from api.HelloApiHandler import HelloApiHandler
 from flask_sqlalchemy import SQLAlchemy
 from flask_praetorian import Praetorian, auth_required, current_user
-from psycopg2.extras import DateRange
+from psycopg2.extras import DateRange, register_uuid
 from datetime import datetime
 from dateutil.parser import isoparse
-
 
 
 app = Flask(__name__, static_url_path='', static_folder='frontend/build')
@@ -118,7 +118,7 @@ def getvenue(vid):
     """
     Given a venue id as a path argument, returns all information on that venue
     """
-    venue = db.session.query(Venue).filter_by(vid=vid).first()
+    venue = db.session.query(Venue).filter_by(vid=vid).one_or_none()
     if venue is None:
         return {"error": f"Venue {vid} does not exist"}, 404
     return {"venue" : venue.serialize()}, 200
@@ -128,9 +128,12 @@ def create_reservation(start_date:str, end_date:str, venue_id:UUID, user_id:UUID
     Reserves a venue for a given date range if it is available
     Returns true on success, returns false otherwise
     """
+    # Must call before working with UUIDs in sqlachemy
+    register_uuid()
+
     start_date = isoparse(start_date)
     end_date = isoparse(end_date)
-    date_range = DateRange(lower=start_date, upper=end_date)
+    date_range = DateRange(lower=start_date.date(), upper=end_date.date(), bounds='[]')
     if db.session.query(Reservation).filter(Reservation.res_dates.op("&&")(date_range)).count() > 0:
         return False
     reservation = Reservation(res_dates=date_range, res_venue=venue_id, holder=user_id)
@@ -138,21 +141,67 @@ def create_reservation(start_date:str, end_date:str, venue_id:UUID, user_id:UUID
     db.session.commit()
     return True
 
-@app.route("/api/venue/reservation", methods=['POST'])
+@app.route("/api/venue/<vid>/reserve", methods=['POST'])
 @auth_required
-def reserve_venue():
+def reserve_venue(vid):
     """
     Reserves the venue for the given daterange
-    Expects start date, end date, venue vid
+    Expects start date and end_date in form, venue id in address
     Dates should be ISO-8601 date strings
     """
-    if request.form["start_date"] and request.form["end_date"] and request.form["venue_id"]:
-        if create_reservation(request.form["start_date"], request.form["end_date"], UUID(request.form["venue_id"]), current_user.id):
+    if request.form["start_date"] and request.form["end_date"]:
+        if create_reservation(request.form["start_date"], request.form["end_date"], uuid.UUID(vid), current_user().id):
             return {"message": "Reservation created"}, 201
         else:
             return {"error": "Timeslot unavailable"}, 400
     else:
         return {"error": "Form requires start_datetime, end_datetime, and venue_id"}, 400
+
+@app.route("/api/venue/<vid>/reservations", methods=['GET'])
+@auth_required
+def get_venue_reservations(vid):
+    """
+    Returns the list of reservations for the given venue
+    Accepts "mode" query parameter with values "all", "future", or "past"
+    """
+    reservations = db.session.query(Reservation).filter_by(res_venue=vid).all()
+    if not request.args["mode"]:
+        # return all reservations for the venue
+        return {"reservations" : [res.serialize() for res in reservations]}, 200
+    elif request.args["mode"] == "all":
+        # return all reservations for the venue
+        return {"reservations" : [res.serialize() for res in reservations]}, 200
+    elif request.args["mode"] == "future":
+        # return reservations whose end date is in the future
+        return {"reservations" : [res.serialize() for res in reservations if res.res_dates.lower >= datetime.today().date() ]}, 200
+    elif request.args["mode"] == "past":
+        # return reservations whose end date has passed
+        return {"reservations" : [res.serialize() for res in reservations if res.res_dates.lower < datetime.today().date() ]}, 200
+    else:
+        return {"error": f"{request.args['mode']} is an invalid mode"}, 400
+
+@app.route("/api/user/reservations", methods=['GET'])
+@auth_required
+def get_users_reservations():
+    """
+    Returns the list of the given user's reservations
+    Accepts "mode" query parameter with values "all", "future", or "past"
+    """
+    reservations = db.session.query(Reservation).filter(Reservation.holder==current_user().id).all()
+    if not request.args["mode"]:
+        # return all reservations for the venue
+        return {"reservations" : [res.serialize() for res in reservations]}, 200
+    elif request.args["mode"] == "all":
+        # return all reservations for the venue
+        return {"reservations" : [res.serialize() for res in reservations]}, 200
+    elif request.args["mode"] == "future":
+        # return reservations whose end date is in the future
+        return {"reservations" : [res.serialize() for res in reservations if res.res_dates.upper >= datetime.today().date() ]}, 200
+    elif request.args["mode"] == "past":
+        # return reservations whose end date has passed
+        return {"reservations" : [res.serialize() for res in reservations if res.res_dates.upper < datetime.today().date() ]}, 200
+    else:
+        return {"error": f"{request.args['mode']} is an invalid mode"}, 400
 
 @app.route("/api/postwedding", methods=['POST'])
 @auth_required
