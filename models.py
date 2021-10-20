@@ -130,10 +130,19 @@ class Reservation(db.Model):
     holder = db.Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
 
     def __init__(self, res_dates:DateRange, res_venue:UUID, holder:UUID):
+        self.rid = uuid.uuid4()
         self.res_dates = res_dates
         self.res_venue = res_venue
         self.holder = holder
 
+    def serialize(self) -> dict:
+        return {
+            "rid" : self.rid,
+            "start_date" : self.res_dates.lower,
+            "end_date" : self.res_dates.upper,
+            "venue" : self.res_venue,
+            "holder" : self.holder
+        }
     def __repr__(self) -> str:
         return f'<Reservation {self.rid}>'
 
