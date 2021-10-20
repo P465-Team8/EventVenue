@@ -180,6 +180,29 @@ def get_venue_reservations(vid):
     else:
         return {"error": f"{request.args['mode']} is an invalid mode"}, 400
 
+@app.route("/api/user/reservations", methods=['GET'])
+@auth_required
+def get_users_reservations():
+    """
+    Returns the list of the given users' reservations with
+    Accepts "mode" query parameter with values "all", "future", or "past"
+    """
+    reservations = db.session.query(Reservation).filter_by(holder=current_user().id).all()
+    if not request.args["mode"]:
+        # return all reservations for the venue
+        return {"reservations" : [res.serialize() for res in reservations]}, 200
+    elif request.args["mode"] == "all":
+        # return all reservations for the venue
+        return {"reservations" : [res.serialize() for res in reservations]}, 200
+    elif request.args["mode"] == "future":
+        # return reservations whose end date is in the future
+        return {"reservations" : [res.serialize() for res in reservations if res.res_dates.upper >= datetime.today().date() ]}, 200
+    elif request.args["mode"] == "past":
+        # return reservations whose end date has passed
+        return {"reservations" : [res.serialize() for res in reservations if res.res_dates.upper < datetime.today().date() ]}, 200
+    else:
+        return {"error": f"{request.args['mode']} is an invalid mode"}, 400
+
 
 @app.route("/api/postwedding", methods=['POST'])
 @auth_required
