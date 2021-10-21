@@ -253,6 +253,31 @@ def bookmarkvenue():
     else:
         return {"error": "Form Requires name"}, 400
 
+@app.route("/api/bookmarkwedding/<wid>", methods=['POST'])
+@auth_required
+def bookmark_wedding(wid):
+    """
+    Toggles whether or not a user has bookmarked the given wedding
+    The wedding's wid should be given as a url parameter
+    """
+
+    # determine if the user has already bookmarked the wedding
+    bookmark_status = db.session.query(WeddingBookmark).filter_by(bookmarked_wedding=wid, user_id=current_user().id).one_or_none()
+    if bookmark_status is None:
+        # Bookmark the wedding
+        bookmark = WeddingBookmark(bookmarked_wedding=wid, user_id=current_user().id)
+        db.session.add(bookmark)
+        db.session.commit()
+    else:
+        # Delete their bookmark
+        db.session.query(WeddingBookmark).filter_by(bookmarked_wedding=wid, user_id=current_user().id).delete()
+
+@app.route("/api/bookmarkwedding", methods=["GET"])
+@auth_required
+def get_users_wedding_bookmarks():
+    """
+    Returns the list of weddings the logged in user has bookmarked
+    """
 
 @app.route("/api/venuesearch", methods=['GET'])
 @auth_required
