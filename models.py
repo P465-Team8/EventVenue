@@ -181,5 +181,12 @@ class VenueBookmark(db.Model):
         self.bookmarked_venue = bookmarked_venue
         self.user_id = user_id
 
+class WeddingBookmark(db.Model):
+    bookmarked_wedding = db.Column(UUID(as_uuid=True), ForeignKey('weddings.wid'),primary_key=True)
+    user_id = db.Column(UUID(as_uuid=True), ForeignKey('users.id'), primary_key=True)
+
+    def __init__(self, bookmarked_wedding:UUID, user_id:UUID):
+        self.bookmarked_wedding = bookmarked_wedding
+        self.user_id = user_id
 
     

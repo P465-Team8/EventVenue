@@ -38,7 +38,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Initialize flask-praetorian and create database
-from models import Reservation, User, Venue, VenueBookmark, Wedding
+from models import Reservation, User, Venue, VenueBookmark, Wedding, WeddingBookmark
 with app.app_context():
     guard.init_app(app, User)
 db.create_all()
