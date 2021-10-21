@@ -173,6 +173,12 @@ class Wedding(db.Model):
     def __str__(self) -> str:
         return str(self.host) + " " + str(self.res_venue) + " " + str(self.holder)
 
+    def serialize(self):
+        return {"wid": self.wid,
+                "host": self.host,
+                "description": self.description,
+                "date": self.wedding_datetime}
+
 class VenueBookmark(db.Model):
     bookmarked_venue = db.Column(UUID(as_uuid=True), ForeignKey('venues.vid'),primary_key=True)
     user_id = db.Column(UUID(as_uuid=True), ForeignKey('users.id'), primary_key=True)

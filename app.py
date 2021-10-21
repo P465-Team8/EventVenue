@@ -268,9 +268,11 @@ def bookmark_wedding(wid):
         bookmark = WeddingBookmark(bookmarked_wedding=wid, user_id=current_user().id)
         db.session.add(bookmark)
         db.session.commit()
+        return {"message":"Wedding bookmarked"}, 201
     else:
         # Delete their bookmark
         db.session.query(WeddingBookmark).filter_by(bookmarked_wedding=wid, user_id=current_user().id).delete()
+        return {"message":"Wedding unbookmarked"}, 201
 
 @app.route("/api/bookmarkwedding", methods=["GET"])
 @auth_required
@@ -278,6 +280,8 @@ def get_users_wedding_bookmarks():
     """
     Returns the list of weddings the logged in user has bookmarked
     """
+    weddings = db.session.query(Wedding).join(WeddingBookmark, WeddingBookmark.bookmarked_wedding==Wedding.wid).filter_by(user_id=current_user().id).all()
+    return {"wedding bookmarks": [wed for wed in weddings]}, 200
 
 @app.route("/api/venuesearch", methods=['GET'])
 @auth_required
