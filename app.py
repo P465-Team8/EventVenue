@@ -214,8 +214,8 @@ def postwedding():
     #TODO Create reservation instance for wedding
 
     if request.form["description"] and request.form["is_public"] and request.form["wedding_reservation"] and request.form["wedding_datetime"]:
-        if db.session.query(Wedding).filter_by(wedding_reservation=request.form["wedding_reservation"]).count(id) == 1: 
-            new_wedding = Wedding(current_user.id, request.form["description"], request.form["is_public"], request.form["wedding_reservation"], request.form["wedding_datetime"])
+        if db.session.query(Reservation).filter_by(rid=UUID(request.form["wedding_reservation"])).count() == 1: 
+            new_wedding = Wedding(host=current_user().id, description=request.form["description"], is_public=bool(request.form["is_public"]), wedding_reservation=UUID(request.form["wedding_reservation"]), wedding_datetime=isoparse(request.form["wedding_datetime"]))
             db.session.add(new_wedding)
             db.session.commit()
             return {"message": f"Wedding {request.form['description']}"}, 202
@@ -272,6 +272,7 @@ def bookmark_wedding(wid):
     else:
         # Delete their bookmark
         db.session.query(WeddingBookmark).filter_by(bookmarked_wedding=wid, user_id=current_user().id).delete()
+        db.session.commit()
         return {"message":"Wedding unbookmarked"}, 201
 
 @app.route("/api/bookmarkwedding", methods=["GET"])
@@ -281,7 +282,7 @@ def get_users_wedding_bookmarks():
     Returns the list of weddings the logged in user has bookmarked
     """
     weddings = db.session.query(Wedding).join(WeddingBookmark, WeddingBookmark.bookmarked_wedding==Wedding.wid).filter_by(user_id=current_user().id).all()
-    return {"wedding bookmarks": [wed for wed in weddings]}, 200
+    return {"wedding bookmarks": [wed.serialize() for wed in weddings]}, 200
 
 @app.route("/api/venuesearch", methods=['GET'])
 @auth_required
