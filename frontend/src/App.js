@@ -7,6 +7,7 @@ import { Container } from "react-bootstrap";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Login from "./Login";
 import ForgotPassword from "./ForgotPassword";
+import HomePage from "./HomePage";
 
 function App() {
   const [getMessage, setGetMessage] = useState({});
@@ -31,6 +32,7 @@ function App() {
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
         <Route path="/forgot-password" component={ForgotPassword} />
+        <Route path="/HomePage" component={HomePage} />
       </Switch>
     </Router>
   );
