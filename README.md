@@ -27,6 +27,7 @@ Right now, the code is the result of following [this](https://towardsdatascience
 4. Start React Frontend in new terminal
 ```console
 ~/EventVenueProject$ cd frontend
+~/EventVenueProject/frontend$ npm install
 ~/EventVenueProject/frontend$ npm start
 ```
 
