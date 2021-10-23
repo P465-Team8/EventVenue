@@ -22,7 +22,8 @@ Everything for login and registration is currently done. Backend currently suppo
 2. Comment out heroku backend variable and uncomment local backend variable in [App.js](./frontend/src/App.js)
 3. Start Flask Backend
 ```console
-~/EventVenueProject$ flask run
+~/EventVenueProject$ source venv/bin/activate
+(venv) ~/EventVenueProject$ flask run
 ```
 4. Start React Frontend in new terminal
 ```console
