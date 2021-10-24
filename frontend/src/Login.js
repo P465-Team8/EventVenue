@@ -34,7 +34,7 @@ export default function Login() {
       .post("http://localhost:5000/api/auth/login", formData1)
       .then(function (response) {
         console.log(response);
-        history.push("/");
+        history.push("/HomePage");
       })
       .catch(function (error) {
         console.log(error);
@@ -78,7 +78,11 @@ export default function Login() {
                   </Form.Group>
                   <Form.Group id="password">
                     <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" ref={passwordRef} required></Form.Control>
+                    <Form.Control
+                      type="password"
+                      ref={passwordRef}
+                      required
+                    ></Form.Control>
                   </Form.Group>
                   <Button
                     style={{ marginTop: "20px" }}
