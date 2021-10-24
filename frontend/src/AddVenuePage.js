@@ -1,10 +1,10 @@
-import React, { Component } from "react";
+import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import SideBar from "./components/sidebar/SideBar";
-import "./App.css";
 import ContentAddVenueForm from "./components/content/ContentAddVenueForm";
+import "./App.css";
 
-class HomePage extends React.Component {
+class AddVenuePage extends React.Component {
   constructor(props) {
     super(props);
 
@@ -60,4 +60,4 @@ class HomePage extends React.Component {
     );
   }
 }
-export default HomePage;
+export default AddVenuePage;
