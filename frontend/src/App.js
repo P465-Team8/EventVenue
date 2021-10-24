@@ -8,6 +8,7 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Login from "./Login";
 import ForgotPassword from "./ForgotPassword";
 import HomePage from "./HomePage";
+import AddVenuePage from "./AddVenuePage";
 
 function App() {
   const [getMessage, setGetMessage] = useState({});
@@ -33,6 +34,7 @@ function App() {
         <Route path="/signup" component={Signup} />
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/HomePage" component={HomePage} />
+        <Route path="/AddVenue" component={AddVenuePage} />
       </Switch>
     </Router>
   );
