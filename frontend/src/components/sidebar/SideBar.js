@@ -1,5 +1,7 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { NavLink } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 import {
   faHome,
@@ -15,6 +17,8 @@ import classNames from "classnames";
 
 class SideBar extends React.Component {
   render() {
+    const { location } = this.props;
+
     return (
       <div className={classNames("sidebar", { "is-open": this.props.isOpen })}>
         <div className="sidebar-header">
@@ -32,15 +36,18 @@ class SideBar extends React.Component {
         <Nav className="flex-column pt-2">
           <p className="ml-3">Features</p>
 
-          <Nav.Item className="active">
-            <Nav.Link href="/">
+          <Nav.Item
+            className={window.location.pathname === "/HomePage" ? "active" : ""}
+          >
+            <Nav.Link href="/HomePage">
               <FontAwesomeIcon icon={faHome} className="mr-2" />
               Home
             </Nav.Link>
           </Nav.Item>
-
-          <Nav.Item>
-            <Nav.Link href="/">
+          <Nav.Item
+            className={window.location.pathname === "/AddVenue" ? "active" : ""}
+          >
+            <Nav.Link href="/AddVenue">
               <FontAwesomeIcon icon={faBriefcase} className="mr-2" />
               Add Venue
             </Nav.Link>

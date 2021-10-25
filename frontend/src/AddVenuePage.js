@@ -1,11 +1,10 @@
-import React, { Component } from "react";
+import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import SideBar from "./components/sidebar/SideBar";
-import "./App.css";
 import ContentAddVenueForm from "./components/content/ContentAddVenueForm";
-import HomePageContent from "./components/content/HomePageContent";
+import "./App.css";
 
-class HomePage extends React.Component {
+class AddVenuePage extends React.Component {
   constructor(props) {
     super(props);
 
@@ -56,9 +55,9 @@ class HomePage extends React.Component {
     return (
       <div className="App wrapper">
         <SideBar toggle={this.toggle} isOpen={this.state.isOpen} />
-        <HomePageContent toggle={this.toggle} isOpen={this.state.isOpen} />
+        <ContentAddVenueForm toggle={this.toggle} isOpen={this.state.isOpen} />
       </div>
     );
   }
 }
-export default HomePage;
+export default AddVenuePage;
