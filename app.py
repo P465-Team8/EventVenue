@@ -20,9 +20,9 @@ from datetime import datetime
 from dateutil.parser import isoparse
 
 
-app = Flask(__name__, static_url_path='/', static_folder='frontend/build/static')
+app = Flask(__name__, static_url_path='/', static_folder='frontend/build/')
 
-CORS(app) #comment this on deployment
+#CORS(app) #comment this on deployment
 
 api = Api(app)
 
@@ -44,9 +44,13 @@ with app.app_context():
 db.create_all()
 
 
-@app.route("/", defaults={'path':''})
-def serve(path):
-    return send_from_directory(app.static_folder,'index.html')
+@app.route("/")
+def index():
+    return app.send_static_file('index.html')
+
+@app.errorhandler(404)
+def not_found(e):
+    return app.send_static_file('index.html')
 
 @app.route("/api/auth/register", methods=['POST'])
 def register():
