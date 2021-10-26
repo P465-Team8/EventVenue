@@ -20,7 +20,7 @@ from datetime import datetime
 from dateutil.parser import isoparse
 
 
-app = Flask(__name__, static_url_path='', static_folder='frontend/build/static')
+app = Flask(__name__, static_url_path='/', static_folder='frontend/build/static')
 
 CORS(app) #comment this on deployment
 

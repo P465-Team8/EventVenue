@@ -4,7 +4,7 @@ import axios from "axios";
 
 import Signup from "./Signup";
 import { Container } from "react-bootstrap";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { HashRouter as Router, Switch, Route } from "react-router-dom";
 import Login from "./Login";
 import ForgotPassword from "./ForgotPassword";
 import HomePage from "./HomePage";
