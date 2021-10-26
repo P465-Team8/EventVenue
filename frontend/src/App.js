@@ -14,8 +14,8 @@ function App() {
   const [getMessage, setGetMessage] = useState({});
 
   useEffect(() => {
-    var backend = "http://localhost:5000/flask/hello";
-    //var backend =  "https://lonelyweddings.herokuapp.com/flask/hello"
+    //var backend = "http://localhost:5000/flask/hello";
+    var backend =  "https://lonelyweddings.herokuapp.com/flask/hello"
     axios
       .get(backend)
       .then((response) => {
