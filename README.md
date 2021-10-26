@@ -41,14 +41,19 @@ Everything for login and registration is currently done. Backend currently suppo
 ## Deploy to Heroku
 1. Comment lines 3 and 7 for handling CORS in app.py.
 2. Comment out local backend variable and uncomment heroku backend variable in [App.js](./frontend/src/App.js)
-3. Use git to add and commit changed files.
-4. [Push to heroku](https://devcenter.heroku.com/articles/git#deploying-code).
+3. Build Front end Components 
+    ```console 
+    ~/EventVenueProject$ cd frontend
+    ~/EventVenueProject/frontend$ npm run build
+    ```
+4. Use git to add and commit changed files.
+5. [Push to heroku](https://devcenter.heroku.com/articles/git#deploying-code).
     ```console
-    $ git push heroku main
+    ~/EventVenueProject$ git push heroku main
     ```
     or if on a different branch:
      ```console
-    $ git push heroku branchname:main
+    ~/EventVenueProject$ git push heroku branchname:main
     ```
-5. Open app at https://lonelyweddings.herokuapp.com/flask/hello
+6. Open app at https://lonelyweddings.herokuapp.com/
 
