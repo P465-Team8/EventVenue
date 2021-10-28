@@ -33,7 +33,10 @@ export default function Login() {
     axios
       .post("http://localhost:5000/api/auth/login", formData1)
       .then(function (response) {
-        console.log(response);
+        console.log(response.data["access_token"]);
+        // Store the JWT in localStorage
+        localStorage.setItem('token', `Bearer ${response.data["access_token"]}`);
+
         history.push("/HomePage");
       })
       .catch(function (error) {
