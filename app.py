@@ -11,7 +11,7 @@ from sqlalchemy.sql.sqltypes import JSON, String
 from sqlalchemy.util.langhelpers import MemoizedSlots
 from werkzeug import useragents
 from flask_restful import Api
-from flask_cors import CORS #comment this on deployment
+from flask_cors import CORS, cross_origin #comment this on deployment
 from api.HelloApiHandler import HelloApiHandler
 from flask_sqlalchemy import SQLAlchemy
 from flask_praetorian import Praetorian, auth_required, current_user
@@ -20,7 +20,7 @@ from datetime import datetime
 from dateutil.parser import isoparse
 
 
-app = Flask(__name__, static_url_path='', static_folder='frontend/build')
+app = Flask(__name__, static_url_path='/', static_folder='frontend/build')
 
 CORS(app) #comment this on deployment
 
@@ -45,6 +45,7 @@ db.create_all()
 
 
 @app.route("/", defaults={'path':''})
+@cross_origin()
 def serve(path):
     return send_from_directory(app.static_folder,'index.html')
 
