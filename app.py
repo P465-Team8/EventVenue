@@ -210,7 +210,6 @@ def postwedding():
     Posts Wedding to Platform
     Post request requires "description", "is_public", "wedding_reservation", "wedding_datetime"
     """
-    
     #TODO Create reservation instance for wedding
 
     if request.form["description"] and request.form["is_public"] and request.form["wedding_reservation"] and request.form["wedding_datetime"]:
@@ -224,32 +223,28 @@ def postwedding():
     else:
         return {"error": "Form requires description, description, is_public, wedding_reservation, wedding_datetime."}, 400
 
-@app.route("/api/bookmarkvenue", methods=['POST'])
+@app.route("/api/bookmarkvenue/<vid>", methods=['POST'])
 @auth_required
-def bookmarkvenue():
+def bookmarkvenue(vid):
     """
     Adds venue to user's bookmarked venues
-    requires "name"
     """
-
-        
-    if request.form["name"]:
-        if db.session.query(Venue).filter_by(name=request.form["name"]).first():
-            TempVenue = db.session.query(Venue).filter_by(name=request.form["name"]).first()
-            if db.session.query(VenueBookmark).filter_by(vid=TempVenue.vid).count == 0:
-                print(TempVenue.name)
-                new_bookmarked_venue = VenueBookmark(TempVenue.vid,current_user.id)
-                db.session.add(new_bookmarked_venue)
-                db.session.commit()
-                return {"message": "Venue bookmarked"}, 201
-            else:
-                db.session.query(VenueBookmark).filter_by(bookmarked_venue=TempVenue.vid).delete()
-                db.session.commit()
-                return {"message": "Venue unbookmarked"}, 201
+    # Determine if Venue Exists 
+    if db.session.query(Venue).filter_by(vid=vid).first():
+        # Determine if venue is bookmarked or not
+        if db.session.query(VenueBookmark).filter_by(vid=vid).count == 0:
+            # Bookmark Venue
+            new_bookmarked_venue = VenueBookmark(vid,current_user.id)
+            db.session.add(new_bookmarked_venue)
+            db.session.commit()
+            return {"message": "Venue bookmarked"}, 201
         else:
-            return {"message": "Venue does not exist"}, 400
+            # Delete Bookmark 
+            db.session.query(VenueBookmark).filter_by(bookmarked_venue=vid).delete()
+            db.session.commit()
+            return {"message": "Venue unbookmarked"}, 201
     else:
-        return {"error": "Form Requires name"}, 400
+        return {"message": "Venue does not exist"}, 400
 
 @app.route("/api/bookmarkwedding/<wid>", methods=['POST'])
 @auth_required
