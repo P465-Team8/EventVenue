@@ -227,7 +227,6 @@ def postwedding():
 @app.route("/api/bookmarkvenue", methods=['POST'])
 @auth_required
 def bookmarkvenue():
-    #TODO Use VID
     """
     Adds venue to user's bookmarked venues
     requires "name"
@@ -236,16 +235,15 @@ def bookmarkvenue():
         
     if request.form["name"]:
         if db.session.query(Venue).filter_by(name=request.form["name"]).first():
-            if db.session.query(Venue).filter_by(name=request.form["name"]).count == 1:
-                venue_id = db.session.query(Venue).filter_by(name=request.form["name"]).first()
-                print(venue_id)
-                new_bookmarked_venue = VenueBookmark(venue_id.vid,current_user.id)
+            TempVenue = db.session.query(Venue).filter_by(name=request.form["name"]).first()
+            if db.session.query(VenueBookmark).filter_by(vid=TempVenue.vid).count == 0:
+                print(TempVenue.name)
+                new_bookmarked_venue = VenueBookmark(TempVenue.vid,current_user.id)
                 db.session.add(new_bookmarked_venue)
                 db.session.commit()
                 return {"message": "Venue bookmarked"}, 201
             else:
-                venue_id = db.session.query(Venue).filter_by(name=request.form["name"]).first()
-                db.session.query(VenueBookmark).filter_by(bookmarked_venue=venue_id.vid).delete()
+                db.session.query(VenueBookmark).filter_by(bookmarked_venue=TempVenue.vid).delete()
                 db.session.commit()
                 return {"message": "Venue unbookmarked"}, 201
         else:
