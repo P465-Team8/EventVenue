@@ -108,7 +108,8 @@ def postvenue():
                 db.session.commit()
                 return {"message": f"Venue {request.form['name']}"}, 201
         else:
-            return {"error": "Venue already exists"}, 400
+            ven = db.session.query(Venue).filter_by(name=request.form["name"]).first()
+            return {"error": ven.vid}, 400
     else:
         return {"error": "Form requires name, description, street_address, city, state, zipcode, pictures."}, 400
 
@@ -232,9 +233,10 @@ def bookmarkvenue(vid):
     # Determine if Venue Exists 
     if db.session.query(Venue).filter_by(vid=vid).first():
         # Determine if venue is bookmarked or not
-        if db.session.query(VenueBookmark).filter_by(vid=vid).count == 0:
-            # Bookmark Venue
-            new_bookmarked_venue = VenueBookmark(vid,current_user.id)
+        bookmark_status = db.session.query(VenueBookmark).filter_by(bookmarked_venue=vid, user_id=current_user().id).one_or_none()
+        if bookmark_status is None:
+            # Bookmark Venue 
+            new_bookmarked_venue = VenueBookmark(bookmarked_venue = vid, user_id = current_user().id)
             db.session.add(new_bookmarked_venue)
             db.session.commit()
             return {"message": "Venue bookmarked"}, 201
@@ -285,7 +287,7 @@ def venuesearch(search_terms):
     searches in "name", "description", "state", or "city"
     
     """
-    results = db.session.query(Venue).filter(Venue.name.like("%" + search_terms + "%"), Venue.description.like("%" + search_terms + "%")).all()
+    results = db.session.query(Venue).filter(Venue.name.like("%" + search_terms + "%"), Venue.description.like("%" + search_terms + "%"),Venue.state.like("%" + search_terms + "%"),Venue.city.like("%" + search_terms + "%")).all()
     if results:
         return results, 201 
     else:
@@ -293,8 +295,8 @@ def venuesearch(search_terms):
         
         """ 
         
-        Venue.state.like("%" + request.form["search_terms"] + "%"), 
-        Venue.city.like("%" + request.form["search_terms"] + "%")).all()
+        , 
+        ).all()
         """
 
 api.add_resource(HelloApiHandler, '/flask/hello')
