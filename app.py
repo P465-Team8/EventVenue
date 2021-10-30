@@ -277,25 +277,24 @@ def get_users_wedding_bookmarks():
     weddings = db.session.query(Wedding).join(WeddingBookmark, WeddingBookmark.bookmarked_wedding==Wedding.wid).filter_by(user_id=current_user().id).all()
     return {"wedding bookmarks": [wed.serialize() for wed in weddings]}, 200
 
-@app.route("/api/venuesearch", methods=['GET'])
+@app.route("/api/venuesearch/<search_terms>", methods=['GET'])
 @auth_required
-def venuesearch():
+def venuesearch(search_terms):
     """
     Returns List of Compatible Venues
     searches in "name", "description", "state", or "city"
-    requires "search_terms"
-    """
-    if request.form["search_terms"]:
-        results = db.session.query(Venue).filter(Venue.name.like("%" + request.form["search_terms"] + "%")).all()
     
-        if results:
-            return results, 201 
-        else:
-            return {"message": "No venues found"}, 400 
+    """
+    results = db.session.query(Venue).filter(Venue.name.like("%" + search_terms + "%"), Venue.description.like("%" + search_terms + "%")).all()
+    if results:
+        return results, 201 
+    else:
+        return {"message": "No venues found"}, 400 
         
-"""
-        Venue.description.like("%" + request.form["search_terms"] + "%"),
+        """ 
+        
         Venue.state.like("%" + request.form["search_terms"] + "%"), 
-        Venue.city.like("%" + request.form["search_terms"] + "%")).all()"""
+        Venue.city.like("%" + request.form["search_terms"] + "%")).all()
+        """
 
 api.add_resource(HelloApiHandler, '/flask/hello')
