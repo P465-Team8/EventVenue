@@ -20,11 +20,7 @@ from datetime import datetime
 from dateutil.parser import isoparse
 
 
-<<<<<<< HEAD
 app = Flask(__name__, static_url_path='/', static_folder='frontend/build')
-=======
-app = Flask(__name__, static_url_path='/', static_folder='frontend/build/')
->>>>>>> 78bae7895237ecd399c5ca0d40f60b97836e705e
 
 #CORS(app) #comment this on deployment
 
@@ -48,20 +44,14 @@ with app.app_context():
 db.create_all()
 
 
-<<<<<<< HEAD
 @app.route("/", defaults={'path':''})
 @cross_origin()
 def serve(path):
     return send_from_directory(app.static_folder,'index.html')
-=======
-@app.route("/")
-def index():
-    return app.send_static_file('index.html')
 
 @app.errorhandler(404)
 def not_found(e):
-    return app.send_static_file('index.html')
->>>>>>> 78bae7895237ecd399c5ca0d40f60b97836e705e
+    return send_from_directory(app.static_folder,'index.html')
 
 @app.route("/api/auth/register", methods=['POST'])
 def register():
