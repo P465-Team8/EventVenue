@@ -287,16 +287,29 @@ def venuesearch(search_terms):
     searches in "name", "description", "state", or "city"
     
     """
-    results = db.session.query(Venue).filter(Venue.name.like("%" + search_terms + "%"), Venue.description.like("%" + search_terms + "%"),Venue.state.like("%" + search_terms + "%"),Venue.city.like("%" + search_terms + "%")).all()
-    if results:
-        return results, 201 
+    #TODO need Help figuring out return type
+    results = db.session.query(Venue).filter(Venue.name.ilike("%" + search_terms + "%")).all()
+    if not results:
+        results = (db.session.query(Venue).filter(Venue.description.ilike("%" + search_terms + "%")).all())
+        if not results:
+            results = (db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
+            if not results: 
+                results = (db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
+                if not results:
+                    return {"message": "No venues found"}, 400 
+                else:
+                    return results[2].name, 201
+            else:
+                results.append(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
+        else:
+            results.append(db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
+            results.append(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
+            return results[2].name, 201
     else:
-        return {"message": "No venues found"}, 400 
-        
-        """ 
-        
-        , 
-        ).all()
-        """
+        results.append(db.session.query(Venue).filter(Venue.description.ilike("%" + search_terms + "%")).all())
+        results.append(db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
+        results.append(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
+        return results[2].name, 201
+
 
 api.add_resource(HelloApiHandler, '/flask/hello')
