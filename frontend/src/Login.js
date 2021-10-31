@@ -35,7 +35,10 @@ export default function Login() {
       .then(function (response) {
         console.log(response.data["access_token"]);
         // Store the JWT in localStorage
-        localStorage.setItem('token', `Bearer ${response.data["access_token"]}`);
+        localStorage.setItem(
+          "token",
+          `Bearer ${response.data["access_token"]}`
+        );
 
         history.push("/HomePage");
       })
