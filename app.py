@@ -296,7 +296,7 @@ def venuesearch():
         results = db.session.query(Venue).filter(Venue.name.like("%" + request.form["search_terms"] + "%")).all()
     
         if results:
-            return results, 201 
+            return json.dumps([res.serialize() for res in results]), 201 
         else:
             return {"message": "No venues found"}, 400 
         

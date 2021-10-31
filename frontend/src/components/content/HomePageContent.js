@@ -13,6 +13,7 @@ class HomePageContent extends React.Component {
       >
         <NavBar toggle={this.props.toggle} />
         <div>Home Page</div>
+        <div>{localStorage.getItem("token")}</div>
       </Container>
     );
   }
