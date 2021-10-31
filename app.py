@@ -113,7 +113,8 @@ def postvenue():
                 db.session.commit()
                 return {"message": f"Venue {request.form['name']}"}, 201
         else:
-            return {"error": "Venue already exists"}, 400
+            ven = db.session.query(Venue).filter_by(name=request.form["name"]).first()
+            return {"error": ven.vid}, 400
     else:
         return {"error": "Form requires name, description, street_address, city, state, zipcode, pictures."}, 400
 
@@ -215,7 +216,6 @@ def postwedding():
     Posts Wedding to Platform
     Post request requires "description", "is_public", "wedding_reservation", "wedding_datetime"
     """
-    
     #TODO Create reservation instance for wedding
 
     if request.form["description"] and request.form["is_public"] and request.form["wedding_reservation"] and request.form["wedding_datetime"]:
@@ -229,32 +229,29 @@ def postwedding():
     else:
         return {"error": "Form requires description, description, is_public, wedding_reservation, wedding_datetime."}, 400
 
-@app.route("/api/bookmarkvenue", methods=['POST'])
+@app.route("/api/bookmarkvenue/<vid>", methods=['POST'])
 @auth_required
-def bookmarkvenue():
+def bookmarkvenue(vid):
     """
     Adds venue to user's bookmarked venues
-    requires "name"
     """
-
-        
-    if request.form["name"]:
-        if db.session.query(Venue).filter_by(name=request.form["name"]).first():
-            TempVenue = db.session.query(Venue).filter_by(name=request.form["name"]).first()
-            if db.session.query(VenueBookmark).filter_by(vid=TempVenue.vid).count == 0:
-                print(TempVenue.name)
-                new_bookmarked_venue = VenueBookmark(TempVenue.vid,current_user.id)
-                db.session.add(new_bookmarked_venue)
-                db.session.commit()
-                return {"message": "Venue bookmarked"}, 201
-            else:
-                db.session.query(VenueBookmark).filter_by(bookmarked_venue=TempVenue.vid).delete()
-                db.session.commit()
-                return {"message": "Venue unbookmarked"}, 201
+    # Determine if Venue Exists 
+    if db.session.query(Venue).filter_by(vid=vid).first():
+        # Determine if venue is bookmarked or not
+        bookmark_status = db.session.query(VenueBookmark).filter_by(bookmarked_venue=vid, user_id=current_user().id).one_or_none()
+        if bookmark_status is None:
+            # Bookmark Venue 
+            new_bookmarked_venue = VenueBookmark(bookmarked_venue = vid, user_id = current_user().id)
+            db.session.add(new_bookmarked_venue)
+            db.session.commit()
+            return {"message": "Venue bookmarked"}, 201
         else:
-            return {"message": "Venue does not exist"}, 400
+            # Delete Bookmark 
+            db.session.query(VenueBookmark).filter_by(bookmarked_venue=vid).delete()
+            db.session.commit()
+            return {"message": "Venue unbookmarked"}, 201
     else:
-        return {"error": "Form Requires name"}, 400
+        return {"message": "Venue does not exist"}, 400
 
 @app.route("/api/bookmarkwedding/<wid>", methods=['POST'])
 @auth_required
@@ -287,25 +284,37 @@ def get_users_wedding_bookmarks():
     weddings = db.session.query(Wedding).join(WeddingBookmark, WeddingBookmark.bookmarked_wedding==Wedding.wid).filter_by(user_id=current_user().id).all()
     return {"wedding bookmarks": [wed.serialize() for wed in weddings]}, 200
 
-@app.route("/api/venuesearch", methods=['GET'])
+@app.route("/api/venuesearch/<search_terms>", methods=['GET'])
 @auth_required
-def venuesearch():
+def venuesearch(search_terms):
     """
     Returns List of Compatible Venues
     searches in "name", "description", "state", or "city"
-    requires "search_terms"
-    """
-    if request.form["search_terms"]:
-        results = db.session.query(Venue).filter(Venue.name.like("%" + request.form["search_terms"] + "%")).all()
     
-        if results:
-            return json.dumps([res.serialize() for res in results]), 201 
+    """
+    #TODO need Help figuring out return type
+    results = db.session.query(Venue).filter(Venue.name.ilike("%" + search_terms + "%")).all()
+    if not results:
+        results = (db.session.query(Venue).filter(Venue.description.ilike("%" + search_terms + "%")).all())
+        if not results:
+            results = (db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
+            if not results: 
+                results = (db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
+                if not results:
+                    return {"message": "No venues found"}, 400 
+                else:
+                    return json.dumps([res.serialize() for res in results]), 201
+            else:
+                results.append(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
         else:
-            return {"message": "No venues found"}, 400 
-        
-"""
-        Venue.description.like("%" + request.form["search_terms"] + "%"),
-        Venue.state.like("%" + request.form["search_terms"] + "%"), 
-        Venue.city.like("%" + request.form["search_terms"] + "%")).all()"""
+            results.append(db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
+            results.append(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
+            return json.dumps([res.serialize() for res in results]), 201
+    else:
+        results.append(db.session.query(Venue).filter(Venue.description.ilike("%" + search_terms + "%")).all())
+        results.append(db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
+        results.append(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
+        return json.dumps([res.serialize() for res in results]), 201
+
 
 api.add_resource(HelloApiHandler, '/flask/hello')
