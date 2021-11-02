@@ -311,5 +311,27 @@ def venuesearch(search_terms):
         results.append(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
         return results[2].name, 201
 
+@app.route("/api/weddingsearch/<search_terms>", methods=['GET'])
+@auth_required
+def weddingsearch(search_terms):
+    """
+    Returns a list of public weddings 
+    searches "description" 
+    """
+
+
+    #results = db.session.query(Wedding).filter(Wedding.host.ilike("%" + search_terms + "%"), Wedding.is_public==True).all()
+    #if not results:
+    results = db.session.query(Wedding).filter(Wedding.description.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+    if results:
+        return results[0].description, 201
+    else:
+        return {"message": "No weddings found"}, 400 
+    #else:
+    #    results.append(db.session.query(Wedding).filter(Wedding.description.ilike("%" + search_terms + "%"),Wedding.is_public==True).all())
+    #    return results[0].host, 201
+
+
+
 
 api.add_resource(HelloApiHandler, '/flask/hello')
