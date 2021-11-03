@@ -39,7 +39,7 @@ class SideBar extends React.Component {
           <Nav.Item
             className={window.location.pathname === "/HomePage" ? "active" : ""}
           >
-            <Nav.Link href="/HomePage">
+            <Nav.Link href="/#/HomePage">
               <FontAwesomeIcon icon={faHome} className="mr-2" />
               Home
             </Nav.Link>
@@ -47,7 +47,7 @@ class SideBar extends React.Component {
           <Nav.Item
             className={window.location.pathname === "/AddVenue" ? "active" : ""}
           >
-            <Nav.Link href="/AddVenue">
+            <Nav.Link href="/#/AddVenue">
               <FontAwesomeIcon icon={faBriefcase} className="mr-2" />
               Add Venue
             </Nav.Link>
