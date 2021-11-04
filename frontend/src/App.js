@@ -38,7 +38,7 @@ function App() {
         <Route path="/forgot-password" component={ForgotPassword} />
         <PrivateRoute path="/HomePage" component={HomePage} />
         <PrivateRoute path="/AddVenue" component={AddVenuePage} />
-        <PrivateRoute path="/venue" component={VenuePage} />
+        <PrivateRoute path="/venue/:vid" component={VenuePage} />
       </Switch>
     </Router>
   );

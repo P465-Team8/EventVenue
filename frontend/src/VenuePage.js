@@ -52,10 +52,11 @@ class VenuePage extends React.Component {
   };
 
   render() {
+    const { vid } = this.props.match.params;
     return (
       <div className="App wrapper">
         <SideBar toggle={this.toggle} isOpen={this.state.isOpen} />
-        <VenuePageContent toggle={this.toggle} isOpen={this.state.isOpen} />
+        <VenuePageContent vid={vid} toggle={this.toggle} isOpen={this.state.isOpen} />
       </div>
     );
   }
