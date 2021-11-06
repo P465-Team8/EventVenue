@@ -3,8 +3,45 @@ import Form from "react-bootstrap/Form";
 import classNames from "classnames";
 import { Container, Button } from "react-bootstrap";
 import NavBar from "./Navbar";
+import axios from "axios";
+import { withRouter } from "react-router-dom";
 
+var formData1 = new FormData();
 class ContentAddVenueForm extends React.Component {
+  handleSubmit = (event) => {
+    event.preventDefault();
+    const { history } = this.props;
+
+    formData1.append("name", event.target.name.value);
+    formData1.append("description", event.target.description.value);
+    formData1.append("street_address", event.target.street_address.value);
+    formData1.append("city", event.target.city.value);
+    formData1.append("state", event.target.state.value);
+    formData1.append("zipcode", event.target.zipcode.value);
+    formData1.append("pictures", "[]");
+    console.log(event.target.name.value);
+    console.log(event.target.street_address.value);
+    console.log(event.target.state.value);
+    console.log(event.target.city.value);
+    console.log(event.target.zipcode.value);
+    console.log(event.target.description.value);
+
+    axios
+      .post("http://localhost:5000/api/postvenue", formData1, {
+        headers: {
+          Authorization: `${localStorage.getItem("token")}`,
+        },
+      })
+      .then(function (response) {
+        console.log(response);
+        history.push("/HomePage");
+      })
+      .catch(function (error) {
+        console.log(error);
+        //setError("Failed to login");
+      });
+  };
+
   render() {
     return (
       <Container
@@ -13,20 +50,30 @@ class ContentAddVenueForm extends React.Component {
       >
         <NavBar toggle={this.props.toggle} />
         <Container>
-          <Form>
+          <Form onSubmit={this.handleSubmit}>
             <Form.Group controlId="form.Name">
               <Form.Label>Venue Name</Form.Label>
-              <Form.Control type="text" placeholder="Enter name" />
+              <Form.Control
+                type="text"
+                placeholder="Enter name"
+                required
+                name="name"
+              />
             </Form.Group>
 
             <Form.Group controlId="form.StreetAddress">
               <Form.Label>Street Address</Form.Label>
-              <Form.Control type="text" placeholder="Enter Street Address" />
+              <Form.Control
+                type="text"
+                placeholder="Enter Street Address"
+                required
+                name="street_address"
+              />
             </Form.Group>
 
             <Form.Group controlId="form.State">
               <Form.Label>State</Form.Label>
-              <Form.Select aria-label="Select State">
+              <Form.Select aria-label="Select State" required name="state">
                 <option>Select State</option>
 
                 <option value="Alabama">Alabama</option>
@@ -92,18 +139,30 @@ class ContentAddVenueForm extends React.Component {
             </Form.Group>
             <Form.Group controlId="form.City">
               <Form.Label>City</Form.Label>
-              <Form.Control type="text" placeholder="Enter City" />
+              <Form.Control
+                type="text"
+                placeholder="Enter City"
+                required
+                name="city"
+              />
             </Form.Group>
             <Form.Group controlId="form.Zipcode">
               <Form.Label>Zipcode</Form.Label>
               <Form.Control
                 type="number"
                 placeholder="Enter Zipcode here (number)"
+                required
+                name="zipcode"
               />
             </Form.Group>
             <Form.Group controlId="form.Description">
               <Form.Label>Venue Description</Form.Label>
-              <Form.Control as="textarea" rows={5} />
+              <Form.Control
+                as="textarea"
+                rows={5}
+                required
+                name="description"
+              />
             </Form.Group>
 
             <Button
@@ -120,4 +179,4 @@ class ContentAddVenueForm extends React.Component {
   }
 }
 
-export default ContentAddVenueForm;
+export default withRouter(ContentAddVenueForm);

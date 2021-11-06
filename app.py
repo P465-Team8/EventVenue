@@ -11,7 +11,7 @@ from sqlalchemy.sql.sqltypes import JSON, String
 from sqlalchemy.util.langhelpers import MemoizedSlots
 from werkzeug import useragents
 from flask_restful import Api
-from flask_cors import CORS #comment this on deployment
+from flask_cors import CORS, cross_origin #comment this on deployment
 from api.HelloApiHandler import HelloApiHandler
 from flask_sqlalchemy import SQLAlchemy
 from flask_praetorian import Praetorian, auth_required, current_user
@@ -20,7 +20,7 @@ from datetime import datetime
 from dateutil.parser import isoparse
 
 
-app = Flask(__name__, static_url_path='', static_folder='frontend/build')
+app = Flask(__name__, static_url_path='/', static_folder='frontend/build')
 
 CORS(app) #comment this on deployment
 
@@ -45,7 +45,12 @@ db.create_all()
 
 
 @app.route("/", defaults={'path':''})
+@cross_origin()
 def serve(path):
+    return send_from_directory(app.static_folder,'index.html')
+
+@app.errorhandler(404)
+def not_found(e):
     return send_from_directory(app.static_folder,'index.html')
 
 @app.route("/api/auth/register", methods=['POST'])
@@ -298,18 +303,18 @@ def venuesearch(search_terms):
                 if not results:
                     return {"message": "No venues found"}, 400 
                 else:
-                    return results[2].name, 201
+                    return json.dumps([res.serialize() for res in results]), 201
             else:
                 results.append(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
         else:
             results.append(db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
             results.append(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
-            return results[2].name, 201
+            return json.dumps([res.serialize() for res in results]), 201
     else:
         results.append(db.session.query(Venue).filter(Venue.description.ilike("%" + search_terms + "%")).all())
         results.append(db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
         results.append(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
-        return results[2].name, 201
+        return json.dumps([res.serialize() for res in results]), 201
 
 @app.route("/api/weddingsearch/<search_terms>", methods=['GET'])
 @auth_required
