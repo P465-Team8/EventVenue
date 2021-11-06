@@ -104,6 +104,7 @@ class Venue(db.Model):
 
     def serialize(self) -> dict:
         details_dict = {
+            "vid": str(self.vid),
             "owner" : str(self.owner),
             "name" : self.name,
             "description" : self.description,
