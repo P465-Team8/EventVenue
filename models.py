@@ -186,13 +186,21 @@ class Guestlist(db.Model):
 
     gid = db.Column(UUID(as_uuid=True), primary_key=True)
     guest_id = db.Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
-    wedding_id = db.Column(UUID(as_uuid=True), ForeignKey('wedding.id'), nullable=False)
+    wedding_id = db.Column(UUID(as_uuid=True), ForeignKey('weddings.wid'), nullable=False)
 
     def __init__(self, guest_id:UUID, wedding_id:UUID):
-        self.gid = uuid.uuid4
+        self.gid = uuid.uuid4()
         self.guest_id = guest_id
         self.wedding_id = wedding_id
                         
+    def serialize(self) -> dict:
+        return {
+            "gid" : self.gid,
+            "guest_id" : self.guest_id,
+            "wedding_id" : self.wedding_id}
+
+    def __repr__(self) -> str:
+        return f'<Reservation {self.gid}>'
 
 class VenueBookmark(db.Model):
     bookmarked_venue = db.Column(UUID(as_uuid=True), ForeignKey('venues.vid'),primary_key=True)

@@ -6,6 +6,7 @@ import uuid
 from flask import Flask, send_from_directory, request
 from flask.signals import request_tearing_down
 from sqlalchemy.sql.elements import Null
+from sqlalchemy.sql.expression import true
 from sqlalchemy.sql.operators import like_op
 from sqlalchemy.sql.selectable import Values
 from sqlalchemy.sql.sqltypes import JSON, String
@@ -39,7 +40,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Initialize flask-praetorian and create database
-from models import Reservation, User, Venue, VenueBookmark, Wedding, WeddingBookmark
+from models import Guestlist, Reservation, User, Venue, VenueBookmark, Wedding, WeddingBookmark
 with app.app_context():
     guard.init_app(app, User)
 db.create_all()
@@ -293,7 +294,7 @@ def venuesearch(search_terms):
     searches in "name", "description", "state", or "city"
     
     """
-    #TODO need Help figuring out return type
+
     results = db.session.query(Venue).filter(Venue.name.ilike("%" + search_terms + "%")).all()
     if not results:
         results = (db.session.query(Venue).filter(Venue.description.ilike("%" + search_terms + "%")).all())
@@ -346,6 +347,24 @@ def togglepublic(wid):
     else:
         return {"message": "No such wedding"}, 400
     
+@app.route("/api/togglersvp/<wid>", methods=['POST'])
+@auth_required
+def togglersvp(wid):
+    register_uuid() 
 
+    wedding = db.session.query(Wedding).filter_by(wid=wid).first()
+    if wedding:
+        rsvp = db.session.query(Guestlist).filter_by(guest_id=current_user().id, wedding_id=wid).first() 
+        if rsvp:
+            rsvp = db.session.query(Guestlist).filter_by(guest_id=current_user().id, wedding_id=wid).delete()
+            db.session.commit()
+            return {"message": "rescind RSVP"}, 200
+        else:
+            rsvp = Guestlist(guest_id=current_user().id,wedding_id=wid)
+            db.session.add(rsvp)
+            db.session.commit()     
+            return {"message": "RSVP"}, 200
+    else:
+        return {"message": "No such wedding"}, 400 
 
 api.add_resource(HelloApiHandler, '/flask/hello')
