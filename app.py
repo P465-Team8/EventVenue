@@ -325,7 +325,7 @@ def weddingsearch(search_terms):
     """
     results = db.session.query(Wedding).filter(Wedding.description.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
     if results:
-        return results[0].description, 201
+        return json.dumps([res.serialize() for res in results]), 201
     else:
         return {"message": "No weddings found"}, 400 
 
