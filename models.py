@@ -178,7 +178,9 @@ class Wedding(db.Model):
         return {"wid": self.wid,
                 "host": self.host,
                 "description": self.description,
-                "date": self.wedding_datetime}
+                "date": self.wedding_datetime,
+                "is_public": self.is_public}
+                
 
 class VenueBookmark(db.Model):
     bookmarked_venue = db.Column(UUID(as_uuid=True), ForeignKey('venues.vid'),primary_key=True)

@@ -7,6 +7,7 @@ from flask import Flask, send_from_directory, request
 from flask.signals import request_tearing_down
 from sqlalchemy.sql.elements import Null
 from sqlalchemy.sql.operators import like_op
+from sqlalchemy.sql.selectable import Values
 from sqlalchemy.sql.sqltypes import JSON, String
 from sqlalchemy.util.langhelpers import MemoizedSlots
 from werkzeug import useragents
@@ -329,7 +330,22 @@ def weddingsearch(search_terms):
     else:
         return {"message": "No weddings found"}, 400 
 
-
+@app.route("/api/togglepublic/<wid>", methods=['POST'])
+@auth_required
+def togglepublic(wid):
+    wedding = db.session.query(Wedding).filter_by(wid=wid).first()
+    if wedding:
+        if(wedding.is_public):
+            wedding.is_public = False
+            db.session.commit()
+            return wedding.serialize(), 200
+        else:
+            wedding.is_public = True    
+            db.session.commit()
+            return wedding.serialize(), 200
+    else:
+        return {"message": "No such wedding"}, 400
+    
 
 
 api.add_resource(HelloApiHandler, '/flask/hello')
