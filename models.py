@@ -181,6 +181,18 @@ class Wedding(db.Model):
                 "date": self.wedding_datetime,
                 "is_public": self.is_public}
                 
+class Guestlist(db.Model):
+    __tablename__ = 'guestlist'
+
+    gid = db.Column(UUID(as_uuid=True), primary_key=True)
+    guest_id = db.Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    wedding_id = db.Column(UUID(as_uuid=True), ForeignKey('wedding.id'), nullable=False)
+
+    def __init__(self, guest_id:UUID, wedding_id:UUID):
+        self.gid = uuid.uuid4
+        self.guest_id = guest_id
+        self.wedding_id = wedding_id
+                        
 
 class VenueBookmark(db.Model):
     bookmarked_venue = db.Column(UUID(as_uuid=True), ForeignKey('venues.vid'),primary_key=True)
