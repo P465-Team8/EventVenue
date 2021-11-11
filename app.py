@@ -307,15 +307,15 @@ def venuesearch(search_terms):
                 else:
                     return json.dumps([res.serialize() for res in results]), 201
             else:
-                results.append(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
+                results+=(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
         else:
-            results.append(db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
-            results.append(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
+            results+=(db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
+            results+=(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
             return json.dumps([res.serialize() for res in results]), 201
     else:
-        results.append(db.session.query(Venue).filter(Venue.description.ilike("%" + search_terms + "%")).all())
-        results.append(db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
-        results.append(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
+        results+=(db.session.query(Venue).filter(Venue.description.ilike("%" + search_terms + "%")).all())
+        results+=(db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
+        results+=(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
         return json.dumps([res.serialize() for res in results]), 201
 
 @app.route("/api/weddingsearch/<search_terms>", methods=['GET'])
