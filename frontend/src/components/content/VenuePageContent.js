@@ -15,13 +15,52 @@ class VenuePageContent extends React.Component {
       zipcode: 0,
       description: "",
       owner: "",
-      pictures: []
+      pictures: [],
+      isBookmarked: false
     }
+
   }
-  componentDidMount() {
-    var self = this
+  getBookmarkStatus() {
+    var self = this;
     axios
-      .get(`http://localhost:5000/api/venue/${this.props.vid}`, {
+      .get(`http://localhost:5000/api/venue/${self.props.vid}`, {
+        headers: {
+          Authorization: `${localStorage.getItem("token")}`,
+        },
+      })
+      .then(function (response) {
+       self.state.isBookmarked = (response.data.status === 'true');
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
+  toggleBookmark() {
+    var self = this;
+    axios
+      .post(`http://localhost:5000/api/bookmarkvenue/${self.props.vid}`, {}, {
+        headers: {
+          Authorization: `${localStorage.getItem("token")}`
+        },
+      })
+      .then(function (response) {
+        if (response.data.message === "Venue bookmarked") {
+          self.state.isBookmarked = true
+        }
+        else if (response.data.message === "Venue unbookmarked"){
+          self.state.isBookmarked = false
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
+  componentDidMount() {
+    var self = this;
+    axios
+      .get(`http://localhost:5000/api/bookmarkvenue/${this.props.vid}`, {
         headers: {
           Authorization: `${localStorage.getItem("token")}`,
         },
@@ -36,14 +75,15 @@ class VenuePageContent extends React.Component {
           zipcode: response.data.venue.zipcode,
           description: response.data.venue.description,
           owner: response.data.venue.owner,
-          pictures: response.data.venue.pictures
+          pictures: response.data.venue.pictures,
+          isBookmarked: false
         })
       })
       .catch(function (error) {
         console.log(error);
       });
+    this.getBookmarkStatus()
   }
-
   render() {
     return (
       <Container
@@ -52,6 +92,13 @@ class VenuePageContent extends React.Component {
       >
         <NavBar toggle={this.props.toggle} />
         <h2>{ this.state.name }</h2>
+        <div style={{float: "right;"}} >
+          <Button 
+            variant="primary" 
+            onClick={this.toggleBookmark()}>
+            {this.isBookmarked ? 'Unbookmark' : 'Bookmark'}
+          </Button>
+        </div>
         <div>{ this.state.description }</div>
         <div>Located at { this.state.street_address } { this.state.city }, { this.state.state} { this.state.zipcode } </div>
       </Container>

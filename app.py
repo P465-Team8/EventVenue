@@ -255,6 +255,23 @@ def bookmarkvenue(vid):
     else:
         return {"message": "Venue does not exist"}, 400
 
+@app.route("/api/bookmarkvenue/<vid>", methods=['GET'])
+@auth_required
+def getVenueBookmarkStatus(vid):
+    """
+    Returns if the user has bookmarked the venue or not
+    """
+    # Determine if Venue Exists 
+    if db.session.query(Venue).filter_by(vid=vid).first():
+        # Determine if venue is bookmarked or not
+        bookmark_status = db.session.query(VenueBookmark).filter_by(bookmarked_venue=vid, user_id=current_user().id).one_or_none()
+        if bookmark_status is None:
+            return {"status": "false"}, 200
+        else:
+            return {"status": "true"}, 200
+    else:
+        return {"message": "Venue does not exist"}, 400
+
 @app.route("/api/bookmarkwedding/<wid>", methods=['POST'])
 @auth_required
 def bookmark_wedding(wid):
