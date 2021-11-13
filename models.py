@@ -104,6 +104,7 @@ class Venue(db.Model):
 
     def serialize(self) -> dict:
         details_dict = {
+            "vid": str(self.vid),
             "owner" : str(self.owner),
             "name" : self.name,
             "description" : self.description,
@@ -177,7 +178,29 @@ class Wedding(db.Model):
         return {"wid": self.wid,
                 "host": self.host,
                 "description": self.description,
-                "date": self.wedding_datetime}
+                "date": self.wedding_datetime,
+                "is_public": self.is_public}
+                
+class Guestlist(db.Model):
+    __tablename__ = 'guestlist'
+
+    gid = db.Column(UUID(as_uuid=True), primary_key=True)
+    guest_id = db.Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    wedding_id = db.Column(UUID(as_uuid=True), ForeignKey('weddings.wid'), nullable=False)
+
+    def __init__(self, guest_id:UUID, wedding_id:UUID):
+        self.gid = uuid.uuid4()
+        self.guest_id = guest_id
+        self.wedding_id = wedding_id
+                        
+    def serialize(self) -> dict:
+        return {
+            "gid" : self.gid,
+            "guest_id" : self.guest_id,
+            "wedding_id" : self.wedding_id}
+
+    def __repr__(self) -> str:
+        return f'<Reservation {self.gid}>'
 
 class VenueBookmark(db.Model):
     bookmarked_venue = db.Column(UUID(as_uuid=True), ForeignKey('venues.vid'),primary_key=True)
@@ -194,5 +217,3 @@ class WeddingBookmark(db.Model):
     def __init__(self, bookmarked_wedding:UUID, user_id:UUID):
         self.bookmarked_wedding = bookmarked_wedding
         self.user_id = user_id
-
-    
