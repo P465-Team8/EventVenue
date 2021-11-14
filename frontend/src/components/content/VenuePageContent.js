@@ -16,20 +16,27 @@ class VenuePageContent extends React.Component {
       description: "",
       owner: "",
       pictures: [],
-      isBookmarked: false
+      bookmarkButton: "Bookmark"
     }
+    this.getBookmarkStatus = this.getBookmarkStatus.bind(this);
+    this.toggleBookmark = this.toggleBookmark.bind(this);
 
   }
   getBookmarkStatus() {
     var self = this;
     axios
-      .get(`http://localhost:5000/api/venue/${self.props.vid}`, {
+      .get(`http://localhost:5000/api/bookmarkvenue/${self.props.vid}`, {
         headers: {
           Authorization: `${localStorage.getItem("token")}`,
         },
       })
       .then(function (response) {
-       self.state.isBookmarked = (response.data.status === 'true');
+       if (response.data.status === 'true'){
+         self.state.bookmarkButton = "Unbookmark"
+       }
+       else{
+         self.state.bookmarkButton = "Bookmark"
+       };
       })
       .catch(function (error) {
         console.log(error);
@@ -46,11 +53,12 @@ class VenuePageContent extends React.Component {
       })
       .then(function (response) {
         if (response.data.message === "Venue bookmarked") {
-          self.state.isBookmarked = true
+          self.state.bookmarkButton = "Unbookmark"
         }
         else if (response.data.message === "Venue unbookmarked"){
-          self.state.isBookmarked = false
+          self.state.bookmarkButton = "Bookmark"
         }
+        console.log("Button text: " + self.state.bookmarkButton)
       })
       .catch(function (error) {
         console.log(error);
@@ -60,13 +68,12 @@ class VenuePageContent extends React.Component {
   componentDidMount() {
     var self = this;
     axios
-      .get(`http://localhost:5000/api/bookmarkvenue/${this.props.vid}`, {
+      .get(`http://localhost:5000/api/venue/${this.props.vid}`, {
         headers: {
           Authorization: `${localStorage.getItem("token")}`,
         },
       })
       .then(function (response) {
-        console.log(response.data.venue);
         self.setState({
           name: response.data.venue.name,
           city: response.data.venue.city,
@@ -76,7 +83,7 @@ class VenuePageContent extends React.Component {
           description: response.data.venue.description,
           owner: response.data.venue.owner,
           pictures: response.data.venue.pictures,
-          isBookmarked: false
+          bookmarkButton: self.state.bookmarkButton
         })
       })
       .catch(function (error) {
@@ -95,8 +102,8 @@ class VenuePageContent extends React.Component {
         <div style={{float: "right;"}} >
           <Button 
             variant="primary" 
-            onClick={this.toggleBookmark()}>
-            {this.isBookmarked ? 'Unbookmark' : 'Bookmark'}
+            onClick={this.toggleBookmark}>
+            {this.state.bookmarkButton}
           </Button>
         </div>
         <div>{ this.state.description }</div>
