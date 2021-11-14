@@ -217,5 +217,3 @@ class WeddingBookmark(db.Model):
     def __init__(self, bookmarked_wedding:UUID, user_id:UUID):
         self.bookmarked_wedding = bookmarked_wedding
         self.user_id = user_id
-
-    
