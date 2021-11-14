@@ -175,11 +175,11 @@ class Wedding(db.Model):
         return str(self.host) + " " + str(self.res_venue) + " " + str(self.holder)
 
     def serialize(self):
-        return {"wid": self.wid,
-                "host": self.host,
+        return {"wid": str(self.wid),
+                "host": str(self.host),
                 "description": self.description,
-                "date": self.wedding_datetime,
-                "is_public": self.is_public}
+                "date": str(self.wedding_datetime),
+                "is_public": str(self.is_public)}
                 
 class Guestlist(db.Model):
     __tablename__ = 'guestlist'
@@ -195,12 +195,12 @@ class Guestlist(db.Model):
                         
     def serialize(self) -> dict:
         return {
-            "gid" : self.gid,
-            "guest_id" : self.guest_id,
-            "wedding_id" : self.wedding_id}
+            "gid" : str(elf.gid),
+            "guest_id" : str(self.guest_id),
+            "wedding_id" : str(self.wedding_id)}
 
     def __repr__(self) -> str:
-        return f'<Reservation {self.gid}>'
+        return f'<Guestlist {self.gid}>'
 
 class VenueBookmark(db.Model):
     bookmarked_venue = db.Column(UUID(as_uuid=True), ForeignKey('venues.vid'),primary_key=True)
