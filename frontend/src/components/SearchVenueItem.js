@@ -20,7 +20,7 @@ function SearchVenueItem({ vid, name, city, state, zipcode }) {
         <p className="checkoutProduct__price">
           <small>{zipcode}</small>
         </p>
-        <button onClick={() => {history.push(`/veune/${vid}`)}}>More Info>></button>
+        <button onClick={() => {history.push(`/venue/${vid}`)}}>More Info>></button>
       </div>
     </div>
   );
