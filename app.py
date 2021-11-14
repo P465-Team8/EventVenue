@@ -30,7 +30,7 @@ api = Api(app)
 
 # Configure JWT
 app.config['SECRET_KEY'] = 'group8secret'
-app.config['JWT_ACCES_LIFESPAN'] = {'hours': 24}
+app.config['JWT_ACCESS_LIFESPAN'] = {'hours': 24}
 app.config['JWT_REFRESH_LIFESPAN'] = {'days': 30}
 guard = Praetorian()
 

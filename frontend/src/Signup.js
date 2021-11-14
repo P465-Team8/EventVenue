@@ -5,6 +5,9 @@ import axios from "axios";
 
 import background from "./background3.jpg";
 
+var backendRoot = "https://lonelyweddings.herokuapp.com";
+//var backendRoot = "http://localhost:5000"
+
 export default function Signup() {
   const emailRef = useRef();
   const passwordRef = useRef();

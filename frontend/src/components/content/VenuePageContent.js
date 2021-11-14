@@ -4,6 +4,9 @@ import { Container, Button } from "react-bootstrap";
 import axios from "axios";
 import NavBar from "./Navbar";
 
+var backendRoot = "https://lonelyweddings.herokuapp.com";
+//var backendRoot = "http://localhost:5000"
+
 class VenuePageContent extends React.Component {
   constructor(props){
     super(props);
@@ -25,7 +28,7 @@ class VenuePageContent extends React.Component {
   getBookmarkStatus() {
     var self = this;
     axios
-      .get(`http://localhost:5000/api/bookmarkvenue/${self.props.vid}`, {
+      .get(backendRoot + `/api/bookmarkvenue/${self.props.vid}`, {
         headers: {
           Authorization: `${localStorage.getItem("token")}`,
         },
@@ -46,7 +49,7 @@ class VenuePageContent extends React.Component {
   toggleBookmark() {
     var self = this;
     axios
-      .post(`http://localhost:5000/api/bookmarkvenue/${self.props.vid}`, {}, {
+      .post(backendRoot + `/api/bookmarkvenue/${self.props.vid}`, {}, {
         headers: {
           Authorization: `${localStorage.getItem("token")}`
         },
@@ -68,7 +71,7 @@ class VenuePageContent extends React.Component {
   componentDidMount() {
     var self = this;
     axios
-      .get(`http://localhost:5000/api/venue/${this.props.vid}`, {
+      .get(backendRoot + `/api/venue/${this.props.vid}`, {
         headers: {
           Authorization: `${localStorage.getItem("token")}`,
         },

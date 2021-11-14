@@ -9,6 +9,9 @@ import SearchIcon from "@material-ui/icons/Search";
 import SearchVenueItem from "../SearchVenueItem";
 import { withRouter } from "react-router-dom";
 
+var backendRoot = "https://lonelyweddings.herokuapp.com";
+//var backendRoot = "http://localhost:5000";
+
 var resdata = {};
 
 // var formData1 = new FormData();
@@ -31,7 +34,7 @@ class HomePageContent extends React.Component {
     this.setState({ isLoading: true });
     axios
       .get(
-        `http://localhost:5000/api/venuesearch/${event.target.query.value}`,
+        backendRoot + `/api/venuesearch/${event.target.query.value}`,
 
         {
           headers: {

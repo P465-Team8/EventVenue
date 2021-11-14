@@ -12,23 +12,13 @@ import AddVenuePage from "./AddVenuePage";
 import PrivateRoute from "./PrivateRoute";
 import VenuePage from "./VenuePage";
 
+var backendRoot = "https://lonelyweddings.herokuapp.com";
+//var backendRoot = "http://localhost:5000"
+
 function App() {
   const [getMessage, setGetMessage] = useState({});
   const isAuthenticated = localStorage.getItem("token");
 
-  useEffect(() => {
-    var backend = "http://localhost:5000/flask/hello";
-    //var backend =  "https://lonelyweddings.herokuapp.com/flask/hello"
-    axios
-      .get(backend)
-      .then((response) => {
-        console.log("SUCCESS", response);
-        setGetMessage(response);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
 
   return (
     <Router>
