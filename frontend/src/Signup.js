@@ -34,7 +34,7 @@ export default function Signup() {
     setError("");
     setLoading(true);
     axios
-      .post("http://localhost:5000/api/auth/register", formData)
+      .post(backendRoot + "/api/auth/register", formData)
       .then(function (response) {
         console.log(response);
         history.push("/");
