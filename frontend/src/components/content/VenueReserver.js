@@ -15,19 +15,54 @@ class VenueReserver extends Component {
         startDate: new Date(),
         endDate: new Date(),
         key: 'selection'
-      }
+      },
+      reservedDates: []
     };
     this.handleSelect = this.handleSelect.bind(this);
     this.reserveVenue = this.reserveVenue.bind(this);
   }
 
   componentDidMount() {
-
+    var self = this;
+    axios
+      .get(this.props.backendRoot + `/api/venue/${this.props.vid}/reservations?mode=future`, {
+        headers: {
+          Authorization: `${localStorage.getItem("token")}`,
+        },
+      })
+      .then(function (response) {
+        var reservations = response.data["reservations"];
+        var resDates = []
+        for (const res of reservations) {
+          // Convert to date
+          const startEpoch = Date.parse(res["start_date"]);
+          const endEpoch = Date.parse(res["end_date"]);
+          const startDate = new Date(startEpoch);
+          const endDate = new Date(endEpoch);
+          // Add start+end dates and dates inbetween to reservedDates
+          if (startDate == endDate){
+            resDates = resDates.concat([startDate])
+          }
+          else {
+            let dates = []
+            var date = new Date(startDate);
+            while (date < endDate){
+              dates.push(new Date(date));
+              date.setDate(date.getDate() + 1);
+            }
+            resDates = resDates.concat(dates)
+          }
+        }
+        self.state.reservedDates = resDates;
+        console.log(self.state.reservedDates)
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   }
 
   handleSelect (ranges) {
-    console.log(ranges)
-    this.state.selectionRange.startDate = ranges.selection.startDate;
+    this.state.selectionRange.startDate =ranges.selection.startDate;
     this.state.selectionRange.endDate = ranges.selection.endDate;
   }
   
@@ -64,9 +99,10 @@ class VenueReserver extends Component {
           moveRangeOnFirstSelection={false}
           ranges={[this.state.selectionRange]}
           minDate = {new Date()}
+          disabledDates = {this.state.reservedDates}
         />
         <Button 
-          variant="secondary" 
+          variant="primary" 
           onClick={this.reserveVenue}>
          Reserve
         </Button>
