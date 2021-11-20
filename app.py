@@ -161,9 +161,11 @@ def reserve_venue(vid):
         if create_reservation(request.form["start_date"], request.form["end_date"], uuid.UUID(vid), current_user().id):
             return {"message": "Reservation created"}, 201
         else:
+            print("Error: unable to add resevation to DB")
             return {"error": "Timeslot unavailable"}, 400
     else:
-        return {"error": "Form requires start_datetime, end_datetime, and venue_id"}, 400
+        print("Error: Invalid form")
+        return {"error": "Form requires start_date and end_date"}, 400
 
 @app.route("/api/venue/<vid>/reservations", methods=['GET'])
 @auth_required

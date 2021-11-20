@@ -11,8 +11,8 @@ import "./App.css";
 
 import axios from "axios";
 
-var backendRoot = "https://lonelyweddings.herokuapp.com";
-//var backendRoot = "http://localhost:5000"
+//var backendRoot = "https://lonelyweddings.herokuapp.com";
+var backendRoot = "http://localhost:5000"
 
 export default function Login() {
   const emailRef = useRef();

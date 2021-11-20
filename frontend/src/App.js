@@ -12,8 +12,8 @@ import AddVenuePage from "./AddVenuePage";
 import PrivateRoute from "./PrivateRoute";
 import VenuePage from "./VenuePage";
 
-var backendRoot = "https://lonelyweddings.herokuapp.com";
-//var backendRoot = "http://localhost:5000"
+//var backendRoot = "https://lonelyweddings.herokuapp.com";
+var backendRoot = "http://localhost:5000"
 
 function App() {
   const [getMessage, setGetMessage] = useState({});

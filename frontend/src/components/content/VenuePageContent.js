@@ -3,9 +3,10 @@ import classNames from "classnames";
 import { Container, Button } from "react-bootstrap";
 import axios from "axios";
 import NavBar from "./Navbar";
+import VenueReserver from "./VenueReserver"
 
-var backendRoot = "https://lonelyweddings.herokuapp.com";
-//var backendRoot = "http://localhost:5000"
+//var backendRoot = "https://lonelyweddings.herokuapp.com";
+var backendRoot = "http://localhost:5000"
 
 class VenuePageContent extends React.Component {
   constructor(props){
@@ -111,6 +112,9 @@ class VenuePageContent extends React.Component {
         </div>
         <div>{ this.state.description }</div>
         <div>Located at { this.state.street_address } { this.state.city }, { this.state.state} { this.state.zipcode } </div>
+
+        <VenueReserver vid={this.props.vid} backendRoot={backendRoot}/>
+
       </Container>
     );
   }
