@@ -197,19 +197,19 @@ def get_users_reservations():
     Returns the list of the given user's reservations
     Accepts "mode" query parameter with values "all", "future", or "past"
     """
-    reservations = db.session.query(Reservation).filter(Reservation.holder==current_user().id).all()
+    results = db.session.query(Reservation, Venue).filter(Reservation.res_venue == Venue.vid).filter(Reservation.holder==current_user().id).all()
     if not request.args["mode"]:
         # return all reservations for the venue
-        return {"reservations" : [res.serialize() for res in reservations]}, 200
+        return {"reservations" : [{**res.Reservation.serialize(), **res.Venue.serialize()} for res in results]}, 200
     elif request.args["mode"] == "all":
         # return all reservations for the venue
-        return {"reservations" : [res.serialize() for res in reservations]}, 200
+        return {"reservations" : [{**res.Reservation.serialize(), **res.Venue.serialize()} for res in results]}, 200
     elif request.args["mode"] == "future":
         # return reservations whose end date is in the future
-        return {"reservations" : [res.serialize() for res in reservations if res.res_dates.upper >= datetime.today().date() ]}, 200
+        return {"reservations" : [{**res.Reservation.serialize(), **res.Venue.serialize()} for res in results if res.Reservation.res_dates.upper >= datetime.today().date() ]}, 200
     elif request.args["mode"] == "past":
         # return reservations whose end date has passed
-        return {"reservations" : [res.serialize() for res in reservations if res.res_dates.upper < datetime.today().date() ]}, 200
+        return {"reservations" : [{**res.Reservation.serialize(), **res.Venue.serialize()} for res in results if res.Reservation.res_dates.upper < datetime.today().date() ]}, 200
     else:
         return {"error": f"{request.args['mode']} is an invalid mode"}, 400
 

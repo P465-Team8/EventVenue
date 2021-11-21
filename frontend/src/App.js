@@ -11,6 +11,7 @@ import HomePage from "./HomePage";
 import AddVenuePage from "./AddVenuePage";
 import PrivateRoute from "./PrivateRoute";
 import VenuePage from "./VenuePage";
+import UserProfilePage from "./UserProfilePage";
 
 //var backendRoot = "https://lonelyweddings.herokuapp.com";
 var backendRoot = "http://localhost:5000"
@@ -29,6 +30,7 @@ function App() {
         <PrivateRoute path="/HomePage" component={HomePage} />
         <PrivateRoute path="/AddVenue" component={AddVenuePage} />
         <PrivateRoute path="/venue/:vid" component={VenuePage} />
+        <PrivateRoute path="/user" component={UserProfilePage} />
       </Switch>
     </Router>
   );
