@@ -274,6 +274,15 @@ def getVenueBookmarkStatus(vid):
     else:
         return {"message": "Venue does not exist"}, 400
 
+@app.route("/api/user/venuebookmarks", methods=["GET"])
+@auth_required
+def get_users_venue_bookmarks():
+    """
+    Returns the list of venues the logged in user has bookmarked
+    """
+    venues = db.session.query(Venue).join(VenueBookmark, VenueBookmark.bookmarked_venue==Venue.vid).filter_by(user_id=current_user().id).all()
+    return {"venue bookmarks": [v.serialize() for v in venues]}, 200
+
 @app.route("/api/bookmarkwedding/<wid>", methods=['POST'])
 @auth_required
 def bookmark_wedding(wid):

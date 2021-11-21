@@ -12,15 +12,16 @@ class UserProfile extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            user: {firstName: "test", lastName: "name"},
+            user: {firstName: "", lastName: ""},
             venueReservations: [],
             venueBookmarks: []
         };
-    this.getUserProfile = this.getUserProfile.bind(this);
     }
 
     componentDidMount() {
-        this.getUserProfile()
+        this.getUserProfile();
+        this.getVenueReservations();
+        this.getVenueBookmarks();
     }
 
     getUserProfile() {
@@ -44,6 +45,46 @@ class UserProfile extends React.Component {
         });
     }
 
+    getVenueReservations() {
+        var self = this;
+        axios
+        .get(backendRoot + `/api/user/reservations?mode=future`, {
+            headers: {
+            Authorization: `${localStorage.getItem("token")}`,
+            },
+        })
+        .then(function (response) {
+            self.setState({
+                user: self.state.user,
+                venueReservations: JSON.stringify(response.data),
+                venueBookmarks: self.state.venueBookmarks
+            });
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+
+    getVenueBookmarks() {
+        var self = this;
+        axios
+        .get(backendRoot + `/api/user/venuebookmarks`, {
+            headers: {
+            Authorization: `${localStorage.getItem("token")}`,
+            },
+        })
+        .then(function (response) {
+            self.setState({
+                user: self.state.user,
+                venueReservations: self.state.venueReservations,
+                venueBookmarks: JSON.stringify(response.data)
+            });
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+
     render() {
         return (
         <Container
@@ -57,9 +98,11 @@ class UserProfile extends React.Component {
             </div>
             <div>
                 <h2>Venue Reservations</h2>
+                {this.state.venueReservations}
             </div>
             <div>
                 <h2>Venue Bookmarks</h2>
+                {this.state.venueBookmarks}
             </div>
         </Container>
         );
