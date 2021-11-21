@@ -36,10 +36,14 @@ class VenuePageContent extends React.Component {
       })
       .then(function (response) {
        if (response.data.status === 'true'){
-         self.state.bookmarkButton = "Unbookmark"
+         let newState = Object.assign({}, self.state)
+         newState.bookmarkButton = "Unbookmark"
+         self.setState(newState)
        }
        else{
-         self.state.bookmarkButton = "Bookmark"
+        let newState = Object.assign({}, self.state)
+        newState.bookmarkButton = "Bookmark"
+        self.setState(newState)
        };
       })
       .catch(function (error) {
@@ -57,12 +61,16 @@ class VenuePageContent extends React.Component {
       })
       .then(function (response) {
         if (response.data.message === "Venue bookmarked") {
-          self.state.bookmarkButton = "Unbookmark"
+          let newState = Object.assign({}, self.state)
+         newState.bookmarkButton = "Unbookmark"
+         self.setState(newState)
         }
         else if (response.data.message === "Venue unbookmarked"){
-          self.state.bookmarkButton = "Bookmark"
+          let newState = Object.assign({}, self.state)
+         newState.bookmarkButton = "Bookmark"
+         self.setState(newState)
         }
-        console.log("Button text: " + self.state.bookmarkButton)
+        //console.log("Button text: " + self.state.bookmarkButton)
       })
       .catch(function (error) {
         console.log(error);
