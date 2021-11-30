@@ -4,9 +4,12 @@ import { Container, Button } from "react-bootstrap";
 import axios from "axios";
 import NavBar from "./Navbar";
 import VenueReserver from "./VenueReserver"
+import { Map, GoogleApiWrapper } from 'google-maps-react';
+
 
 //var backendRoot = "https://lonelyweddings.herokuapp.com";
 var backendRoot = "http://localhost:5000"
+
 
 class VenuePageContent extends React.Component {
   constructor(props){
@@ -103,6 +106,11 @@ class VenuePageContent extends React.Component {
       });
     this.getBookmarkStatus()
   }
+
+  maps() {
+
+  }
+
   render() {
     return (
       <Container
@@ -120,12 +128,24 @@ class VenuePageContent extends React.Component {
         </div>
         <div>{ this.state.description }</div>
         <div>Located at { this.state.street_address } { this.state.city }, { this.state.state} { this.state.zipcode } </div>
-
+        <Map
+        google={this.props.google}
+        zoom={14}
+        style={mapStyles}
+        initialCenter={
+          {
+            lat: -1.2884,
+            lng: 36.8233
+          }
+        }
+      />
         <VenueReserver vid={this.props.vid} backendRoot={backendRoot}/>
 
       </Container>
     );
   }
 }
-
+export default GoogleApiWrapper({
+  apiKey: 'AIzaSyBlSErvF35FIXJ2K6XG7hN7BJtrEplUHEA'
+})(MapContainer);
 export default VenuePageContent;
