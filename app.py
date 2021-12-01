@@ -218,8 +218,6 @@ def postwedding():
     Posts Wedding to Platform
     Post request requires "description", "is_public", "wedding_reservation", "wedding_datetime"
     """
-    #TODO Create reservation instance for wedding
-
     if request.form["description"] and request.form["is_public"] and request.form["wedding_reservation"] and request.form["wedding_datetime"]:
         if db.session.query(Reservation).filter_by(rid=UUID(request.form["wedding_reservation"])).count() == 1: 
             new_wedding = Wedding(host=current_user().id, description=request.form["description"], is_public=bool(request.form["is_public"]), wedding_reservation=UUID(request.form["wedding_reservation"]), wedding_datetime=isoparse(request.form["wedding_datetime"]))
@@ -230,6 +228,17 @@ def postwedding():
             return {"error": "reservation does not exist"}, 400
     else:
         return {"error": "Form requires description, description, is_public, wedding_reservation, wedding_datetime."}, 400
+
+@app.route("/api/wedding/<wid>", methods=['GET'])
+@auth_required
+def getwedding(wid):
+    """
+    Given a wedding id as a path argument, returns all information on that wedding
+    """
+    wedding = db.session.query(Wedding).filter_by(wid=wid).one_or_none()
+    if wedding is None:
+        return {"error":f"Wedding {wid} does not exist"}, 404
+    return {"wedding": wedding.serialize()}, 200
 
 @app.route("/api/bookmarkvenue/<vid>", methods=['POST'])
 @auth_required
@@ -276,6 +285,23 @@ def bookmark_wedding(wid):
         db.session.query(WeddingBookmark).filter_by(bookmarked_wedding=wid, user_id=current_user().id).delete()
         db.session.commit()
         return {"message":"Wedding unbookmarked"}, 201
+
+@app.route("/api/bookmarkwedding/<wid>", methods=['GET'])
+@auth_required
+def getWeddingBookmarkStatus(wid):
+    """
+    Returns if the user has bookmarked the wedding or not
+    """
+    # Determine if Venue Exists 
+    if db.session.query(Wedding).filter_by(wid=wid).first():
+        # Determine if venue is bookmarked or not
+        bookmark_status = db.session.query(WeddingBookmark).filter_by(bookmarked_wedding=wid, user_id=current_user().id).one_or_none()
+        if bookmark_status is None:
+            return {"status": "false"}, 200
+        else:
+            return {"status": "true"}, 200
+    else:
+        return {"message": "Wedding does not exist"}, 400
 
 @app.route("/api/bookmarkwedding", methods=["GET"])
 @auth_required
