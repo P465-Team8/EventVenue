@@ -12,10 +12,13 @@ class WeddingPageContent extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      bookmarkButton: "Bookmark"
+      bookmarkButton: "Bookmark",
+      attendButton: "Attend"
     }
     this.getBookmarkStatus = this.getBookmarkStatus.bind(this);
     this.toggleBookmark = this.toggleBookmark.bind(this);
+    this.getAttendanceStatus = this.getAttendanceStatus.bind(this);
+    this.toggleAttendance = this.toggleAttendance.bind(this);
 
   }
   getBookmarkStatus() {
@@ -69,6 +72,58 @@ class WeddingPageContent extends React.Component {
       });
   }
 
+  getAttendanceStatus() {
+    var self = this;
+    axios
+      .get(backendRoot + `/api/wedding/${self.props.wid}/guests/status`, {
+        headers: {
+          Authorization: `${localStorage.getItem("token")}`,
+        },
+      })
+      .then(function (response) {
+       if (response.data.status === 'true'){
+         let newState = Object.assign({}, self.state)
+         newState.attendButton = "Unattend"
+         self.setState(newState)
+       }
+       else{
+        let newState = Object.assign({}, self.state)
+        newState.attendButton = "Attend"
+        self.setState(newState)
+       };
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
+  toggleAttendance() {
+    var self = this;
+    axios
+      .post(backendRoot + `/api/togglersvp/${self.props.wid}`, {}, {
+        headers: {
+          Authorization: `${localStorage.getItem("token")}`
+        },
+      })
+      .then(function (response) {
+        if (response.data.message === "RSVP") {
+          let newState = Object.assign({}, self.state)
+         newState.attendButton = "Unattend"
+         self.setState(newState)
+        }
+        else if (response.data.message === "rescind RSVP"){
+          let newState = Object.assign({}, self.state)
+         newState.attendButton = "Attend"
+         self.setState(newState)
+        }
+        //console.log("Button text: " + self.state.bookmarkButton)
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
+
   componentDidMount() {
     var self = this;
     axios
@@ -88,11 +143,9 @@ class WeddingPageContent extends React.Component {
         console.log(error);
       });
     this.getBookmarkStatus()
+    this.getAttendanceStatus()
   }
 
-  maps() {
-
-  }
 
   render() {
     return (
@@ -109,7 +162,14 @@ class WeddingPageContent extends React.Component {
             {this.state.bookmarkButton}
           </Button>
         </div>
-        <div>{ this.state.description }</div>
+        <div><p>{ this.state.description }</p></div>
+        <div>
+            <Button
+                variant="primary"
+                onClick={this.toggleAttendance}>
+                {this.state.attendButton}
+            </Button>
+        </div>
 
       </Container>
     );

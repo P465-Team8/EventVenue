@@ -292,9 +292,9 @@ def getWeddingBookmarkStatus(wid):
     """
     Returns if the user has bookmarked the wedding or not
     """
-    # Determine if Venue Exists 
+    # Determine if wedding Exists 
     if db.session.query(Wedding).filter_by(wid=wid).first():
-        # Determine if venue is bookmarked or not
+        # Determine if wedding is bookmarked or not
         bookmark_status = db.session.query(WeddingBookmark).filter_by(bookmarked_wedding=wid, user_id=current_user().id).one_or_none()
         if bookmark_status is None:
             return {"status": "false"}, 200
@@ -311,6 +311,37 @@ def get_users_wedding_bookmarks():
     """
     weddings = db.session.query(Wedding).join(WeddingBookmark, WeddingBookmark.bookmarked_wedding==Wedding.wid).filter_by(user_id=current_user().id).all()
     return {"wedding bookmarks": [wed.serialize() for wed in weddings]}, 200
+
+@app.route("/api/wedding/<wid>/guests", methods=['GET'])
+@auth_required
+def getWeddingGuests(wid):
+    """
+    Returns if the list of users attending the given wedding
+    """
+    # Determine if Wedding Exists 
+    if db.session.query(Wedding).filter_by(wid=wid).first():
+        # Determine if venue is bookmarked or not
+        guests = db.session.query(User).join(Guestlist).filter_by(guest_id=User.id, wedding_id=wid).all()
+        return {"guests": [guest.serialize() for guest in guests]}, 200
+    else:
+        return {"message": "Wedding does not exist"}, 400
+
+@app.route("/api/wedding/<wid>/guests/status", methods=['GET'])
+@auth_required
+def checkAttendanceStatus(wid):
+    """
+    Returns if the logged-in user is attending the given wedding
+    """
+    # Determine if Wedding Exists 
+    if db.session.query(Wedding).filter_by(wid=wid).first():
+        # Determine if venue is bookmarked or not
+        attendanceStatus = db.session.query(Guestlist).filter_by(wedding_id=wid, guest_id=current_user().id).one_or_none()
+        if attendanceStatus is None:
+            return {"status": "false"}, 200
+        else:
+            return {"status": "true"}, 200
+    else:
+        return {"message": "Wedding does not exist"}, 400
 
 @app.route("/api/venuesearch/<search_terms>", methods=['GET'])
 @auth_required

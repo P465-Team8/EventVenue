@@ -23,6 +23,12 @@ class User(db.Model):
         self.email = email
         self.password_hash = password_hash
 
+    def serialize(self) -> dict:
+        return {
+            "id": str(self.id),
+            "firstName": self.first_name,
+            "lastName": self.last_name
+        }
     def __repr__(self) -> str:
         return f'<User {self.id}>'
 
@@ -195,7 +201,7 @@ class Guestlist(db.Model):
                         
     def serialize(self) -> dict:
         return {
-            "gid" : str(elf.gid),
+            "gid" : str(self.gid),
             "guest_id" : str(self.guest_id),
             "wedding_id" : str(self.wedding_id)}
 
