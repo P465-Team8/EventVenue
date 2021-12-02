@@ -23,6 +23,14 @@ class User(db.Model):
         self.email = email
         self.password_hash = password_hash
 
+    def serialize(self) -> dict:
+        return {
+            "id": str(self.id),
+            "first name": self.first_name,
+            "last name": self.last_name,
+            "email": self.email
+        }        
+
     def __repr__(self) -> str:
         return f'<User {self.id}>'
 
