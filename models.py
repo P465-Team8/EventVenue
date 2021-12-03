@@ -26,9 +26,11 @@ class User(db.Model):
     def serialize(self) -> dict:
         return {
             "id": str(self.id),
-            "firstName": self.first_name,
-            "lastName": self.last_name
-        }
+            "first name": self.first_name,
+            "last name": self.last_name,
+            "email": self.email
+        }        
+
     def __repr__(self) -> str:
         return f'<User {self.id}>'
 
