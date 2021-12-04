@@ -69,7 +69,7 @@ class HomePageContent extends React.Component {
       )
       .then((response) => {
         console.log(response.data);
-        this.setState({ data: response.data, isLoading: false });
+        this.setState({ data: response.data.search_results, isLoading: false });
       })
       .catch((error) => {
         console.log(error);
