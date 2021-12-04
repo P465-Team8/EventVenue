@@ -203,7 +203,7 @@ class Guestlist(db.Model):
                         
     def serialize(self) -> dict:
         return {
-            "gid" : str(elf.gid),
+            "gid" : str(self.gid),
             "guest_id" : str(self.guest_id),
             "wedding_id" : str(self.wedding_id)}
 
