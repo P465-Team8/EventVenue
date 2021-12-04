@@ -25,16 +25,12 @@ export class MapContainer extends Component {
     this.geocoder.geocode({ 'address': address }, function handleResults(results, status) {
   
       if (status === google.maps.GeocoderStatus.OK) {
-  
         this.state.INITIAL_LOCATION.latitude = results[0].geometry.location.lat
         this.state.INITIAL_LOCATION.longitude = results[0].geometry.location.lng
-  
         return;
       }
-      
         this.state.INITIAL_LOCATION.latitude = ATLANTIC_OCEAN.latitude
         this.state.INITIAL_LOCATION.longitude = ATLANTIC_OCEAN.longitude
-    
     }.bind(this))
   }
 
@@ -72,15 +68,13 @@ export class MapContainer extends Component {
 
   render(){
     return(
-        
     <div
-    className="MapContainer" ref={this.setMapElementReference}>
+    className="MapContainer" ref={this.setMapElementReference(this.mapp)}>
          <LoadScript
         googleMapsApiKey="AIzaSyBlSErvF35FIXJ2K6XG7hN7BJtrEplUHEA"/>
      </div>
      
     )
   }
-
 }
 export default MapContainer
