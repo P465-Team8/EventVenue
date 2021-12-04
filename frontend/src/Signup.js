@@ -5,6 +5,9 @@ import axios from "axios";
 
 import background from "./background3.jpg";
 
+var backendRoot = "https://lonelyweddings.herokuapp.com";
+//var backendRoot = "http://localhost:5000"
+
 export default function Signup() {
   const emailRef = useRef();
   const passwordRef = useRef();
@@ -31,7 +34,7 @@ export default function Signup() {
     setError("");
     setLoading(true);
     axios
-      .post("http://localhost:5000/api/auth/register", formData)
+      .post(backendRoot + "/api/auth/register", formData)
       .then(function (response) {
         console.log(response);
         history.push("/");
