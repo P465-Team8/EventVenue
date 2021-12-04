@@ -3,6 +3,7 @@ import classNames from "classnames";
 import { Container, Button } from "react-bootstrap";
 import axios from "axios";
 import NavBar from "./Navbar";
+import {Link} from "react-router-dom";
 
 //var backendRoot = "https://lonelyweddings.herokuapp.com";
 var backendRoot = "http://localhost:5000"
@@ -12,8 +13,17 @@ class WeddingPageContent extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      bookmarkButton: "Bookmark",
-      attendButton: "Attend"
+          description: "",
+          date: "",
+          bookmarkButton: "",
+          attendButton: "",
+          hostFirst: "",
+          hostLast: "",
+          venueCity: "",
+          venueState: "",
+          venueStreet: "",
+          venueZipcode: "",
+          vid: ""
     }
     this.getBookmarkStatus = this.getBookmarkStatus.bind(this);
     this.toggleBookmark = this.toggleBookmark.bind(this);
@@ -136,7 +146,16 @@ class WeddingPageContent extends React.Component {
         console.log(response.data)
         self.setState({
           description: response.data.wedding.description,
-          bookmarkButton: self.state.bookmarkButton
+          date: response.data.wedding.date,
+          bookmarkButton: self.state.bookmarkButton,
+          attendButton: self.state.attendButton,
+          hostFirst: response.data.user.first_name,
+          hostLast: response.data.user.last_name,
+          venueCity: response.data.venue.city,
+          venueState: response.data.venue.state,
+          venueStreet: response.data.venue.street_address,
+          venueZipcode: response.data.venue.zipcode,
+          vid: response.data.venue.vid
         })
       })
       .catch(function (error) {
@@ -154,15 +173,19 @@ class WeddingPageContent extends React.Component {
         className={classNames("content", { "is-open": this.props.isOpen })}
       >
         <NavBar toggle={this.props.toggle} />
-        <h2>{ this.state.name }</h2>
+        <h2>{ this.state.hostFirst } { this.state.hostLast}'s Wedding</h2>
         <div style={{float: "right;"}} >
           <Button 
             variant="primary" 
             onClick={this.toggleBookmark}>
             {this.state.bookmarkButton}
-          </Button>
+          </Button> <br />
         </div>
-        <div><p>{ this.state.description }</p></div>
+        <div>
+          <p>{ this.state.description }</p>
+          <p>Occurring on {this.state.date} at {this.state.venueStreet} {this.state.venueCity}, {this.state.venueState} {this.state.venueZipcode}.</p>
+          <Link to={`/venue/${this.state.vid}`}>View Venue</Link>
+          </div> <br />
         <div>
             <Button
                 variant="primary"

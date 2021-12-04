@@ -55,6 +55,13 @@ def serve(path):
 def not_found(e):
     return send_from_directory(app.static_folder,'index.html')
 
+@app.route("/api/test", methods=['GET'])
+def test():
+    """
+    Used to test if the server is running
+    """
+    return "Hello!", 200
+
 @app.route("/api/auth/register", methods=['POST'])
 def register():
     """
@@ -235,12 +242,20 @@ def postwedding():
 @auth_required
 def getwedding(wid):
     """
-    Given a wedding id as a path argument, returns all information on that wedding
+    Given a wedding id as a path argument, 
+    returns location, date, description, and host of the wedding
     """
-    wedding = db.session.query(Wedding).filter_by(wid=wid).one_or_none()
-    if wedding is None:
+    result = db.session.query(Wedding, User, Venue)\
+        .join(User, User.id==Wedding.host)\
+        .join(Reservation, Reservation.rid == Wedding.wedding_reservation and\
+                Reservation.holder == User.id)\
+        .join(Venue, Venue.vid == Reservation.res_venue)\
+        .filter(User.id == current_user().id).filter(Wedding.wid == wid).one_or_none()
+    if result is None:
         return {"error":f"Wedding {wid} does not exist"}, 404
-    return {"wedding": wedding.serialize()}, 200
+    return {"wedding": result.Wedding.serialize(),
+            "user": result.User.serialize(),
+            "venue": result.Venue.serialize()}, 200
 
 @app.route("/api/bookmarkvenue/<vid>", methods=['POST'])
 @auth_required
