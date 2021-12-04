@@ -4,7 +4,7 @@ import { Container, Button } from "react-bootstrap";
 import axios from "axios";
 import NavBar from "./Navbar";
 import VenueReserver from "./VenueReserver"
-import { MapContainer } from "./Map";
+import { MapContainer } from "./MapContainer";
 
 
 

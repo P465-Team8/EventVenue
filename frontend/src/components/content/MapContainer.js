@@ -1,13 +1,7 @@
 import React, { Component } from 'react';
-import axios from "axios";
-import { Map, GoogleApiWrapper, InfoWindow, Marker, google } from 'google-maps-react';
-import { intervalToDuration } from 'date-fns';
+import { google, geocoder, LoadScript, maps} from 'google-maps-react';
 
 
-const mapStyles = {
-  width: '100%',
-  height: '100%'
-};
 
 export class MapContainer extends Component {
 
@@ -16,8 +10,8 @@ export class MapContainer extends Component {
     this.state = {
       address: new String,
       INITIAL_LOCATION: {
-        latitude: 0,
-        longitude: 0
+        latitude: 29.532804,
+        longitude: -55.491477
       } 
     };
   }
@@ -27,6 +21,7 @@ export class MapContainer extends Component {
       latitude: 29.532804,
       longitude: -55.491477
     }
+    
     this.geocoder.geocode({ 'address': address }, function handleResults(results, status) {
   
       if (status === google.maps.GeocoderStatus.OK) {
@@ -43,16 +38,14 @@ export class MapContainer extends Component {
     }.bind(this))
   }
 
-  componentDidMount() {
-    var self = this;
-
+  componentDidMount() {   
     this.state.address = this.props.street_address + " " + this.props.city + " " + this.props.state + " " + this.props.zipcode
     
-    this.geocodeAddress(encodeURIComponent(this.state.address))
+    
     console.log(this.state.address)
     console.log(this.state.INITIAL_LOCATION)
     
-    this.map = new google.map.Map(this.mapElement, {
+    this.mapp = new google.maps.Map(this.mapElement, {
       zoom: 8,
       center: {
         lat: this.state.INITIAL_LOCATION.latitude,
@@ -61,16 +54,33 @@ export class MapContainer extends Component {
     });
 
     this.marker = new google.maps.Marker({
-      map: this.map,
+      map: this.mapps,
       position: {
         lat: this.state.INITIAL_LOCATION.latitude,
         lng: this.state.INITIAL_LOCATION.longitude
       }
     });
+    geocoder = new google.maps.Geocoder();
+    this.geocodeAddress(encodeURIComponent(this.state.address))
+    console.log(this.state.address)
+    console.log(this.state.INITIAL_LOCATION)
   }
-  
+
+  setMapElementReference(mapElementReference){
+    this.mapElement = mapElementReference
+  }
+
   render(){
-    <div className="map" ref={this.setMapElementReference}></div>
+    return(
+        
+    <div
+    className="MapContainer" ref={this.setMapElementReference}>
+         <LoadScript
+        googleMapsApiKey="AIzaSyBlSErvF35FIXJ2K6XG7hN7BJtrEplUHEA"/>
+     </div>
+     
+    )
   }
 
 }
+export default MapContainer
