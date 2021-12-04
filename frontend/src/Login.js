@@ -11,9 +11,6 @@ import "./App.css";
 
 import axios from "axios";
 
-//var backendRoot = "https://lonelyweddings.herokuapp.com";
-var backendRoot = "http://localhost:5000"
-
 export default function Login() {
   const emailRef = useRef();
   const passwordRef = useRef();
@@ -34,7 +31,7 @@ export default function Login() {
     setError("");
     setLoading(true);
     axios
-      .post(backendRoot + "/api/auth/login", formData1)
+      .post("http://localhost:5000/api/auth/login", formData1)
       .then(function (response) {
         console.log(response.data["access_token"]);
         // Store the JWT in localStorage

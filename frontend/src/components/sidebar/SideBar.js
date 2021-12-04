@@ -11,7 +11,6 @@ import {
   faImage,
   faCopy,
   faTimes,
-  faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Button } from "react-bootstrap";
 import classNames from "classnames";
@@ -45,16 +44,6 @@ class SideBar extends React.Component {
               Home
             </Nav.Link>
           </Nav.Item>
-
-          <Nav.Item
-            className={window.location.pathname === "/user" ? "active" : ""}
-          >
-            <Nav.Link href="/#/user">
-              <FontAwesomeIcon icon={faUser} className="mr-2" />
-              My Profile
-            </Nav.Link>
-          </Nav.Item>
-
           <Nav.Item
             className={window.location.pathname === "/AddVenue" ? "active" : ""}
           >
