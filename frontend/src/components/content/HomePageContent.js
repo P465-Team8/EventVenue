@@ -12,9 +12,6 @@ import { withRouter } from "react-router-dom";
 import Tabs from "../Tabs";
 import "../SearchVenueItem.css";
 
-var backendRoot = "https://lonelyweddings.herokuapp.com";
-//var backendRoot = "http://localhost:5000";
-
 var resdata = {};
 
 // var formData1 = new FormData();
@@ -38,7 +35,7 @@ class HomePageContent extends React.Component {
     this.setState({ isLoading: true });
     axios
       .get(
-        backendRoot + `/api/venuesearch/${event.target.query.value}`,
+        `http://localhost:5000/api/venuesearch/${event.target.query.value}`,
 
         {
           headers: {

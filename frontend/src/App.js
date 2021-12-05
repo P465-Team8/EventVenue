@@ -10,17 +10,24 @@ import ForgotPassword from "./ForgotPassword";
 import HomePage from "./HomePage";
 import AddVenuePage from "./AddVenuePage";
 import PrivateRoute from "./PrivateRoute";
-import WeddingPage from "./WeddingPage";
-import VenuePage from "./VenuePage";
-import UserProfilePage from "./UserProfilePage";
-
-//var backendRoot = "https://lonelyweddings.herokuapp.com";
-var backendRoot = "http://localhost:5000"
 
 function App() {
   const [getMessage, setGetMessage] = useState({});
   const isAuthenticated = localStorage.getItem("token");
 
+  useEffect(() => {
+    var backend = "http://localhost:5000/flask/hello";
+    //var backend =  "https://lonelyweddings.herokuapp.com/flask/hello"
+    axios
+      .get(backend)
+      .then((response) => {
+        console.log("SUCCESS", response);
+        setGetMessage(response);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
 
   return (
     <Router>
@@ -30,9 +37,6 @@ function App() {
         <Route path="/forgot-password" component={ForgotPassword} />
         <PrivateRoute path="/HomePage" component={HomePage} />
         <PrivateRoute path="/AddVenue" component={AddVenuePage} />
-        <PrivateRoute path="/wedding/:wid" component={WeddingPage} />
-        <PrivateRoute path="/venue/:vid" component={VenuePage} />
-        <PrivateRoute path="/user" component={UserProfilePage} />
       </Switch>
     </Router>
   );

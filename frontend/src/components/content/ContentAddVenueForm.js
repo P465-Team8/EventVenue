@@ -6,9 +6,6 @@ import NavBar from "./Navbar";
 import axios from "axios";
 import { withRouter } from "react-router-dom";
 
-var backendRoot = "https://lonelyweddings.herokuapp.com";
-//var backendRoot = "http://localhost:5000"
-
 var formData1 = new FormData();
 class ContentAddVenueForm extends React.Component {
   handleSubmit = (event) => {
@@ -30,7 +27,7 @@ class ContentAddVenueForm extends React.Component {
     console.log(event.target.description.value);
 
     axios
-      .post(backendRoot + "/api/postvenue", formData1, {
+      .post("http://localhost:5000/api/postvenue", formData1, {
         headers: {
           Authorization: `${localStorage.getItem("token")}`,
         },
