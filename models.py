@@ -32,8 +32,8 @@ class User(db.Model):
     def serialize(self) -> dict:
         return {
             "id": str(self.id),
-            "first name": self.first_name,
-            "last name": self.last_name,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
             "email": self.email
         }        
 

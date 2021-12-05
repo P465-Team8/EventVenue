@@ -157,6 +157,7 @@ class WeddingPageContent extends React.Component {
           venueZipcode: response.data.venue.zipcode,
           vid: response.data.venue.vid
         })
+        console.log(self.state)
       })
       .catch(function (error) {
         console.log(error);
