@@ -14,24 +14,15 @@ import AddWedding from "./components/content/AddWedding";
 import AddWeddingPage from "./AddWeddingPage";
 import VenueManagement from "./VenueManagement";
 import AddContactPage from "./AddContactPage";
+import WeddingPage from "./WeddingPage";
+import VenuePage from "./VenuePage";
+import UserProfilePage from "./UserProfilePage";
+
+//var backendRoot = "https://lonelyweddings.herokuapp.com";
+var backendRoot = "http://localhost:5000"
 
 function App() {
-  const [getMessage, setGetMessage] = useState({});
   const isAuthenticated = localStorage.getItem("token");
-
-  useEffect(() => {
-    var backend = "http://localhost:5000/flask/hello";
-    //var backend =  "https://lonelyweddings.herokuapp.com/flask/hello"
-    axios
-      .get(backend)
-      .then((response) => {
-        console.log("SUCCESS", response);
-        setGetMessage(response);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
 
   return (
     <Router>
@@ -44,6 +35,9 @@ function App() {
         <PrivateRoute path="/Reservations/:rid" component={AddWeddingPage} />
         <PrivateRoute path="/VenueManagement" component={VenueManagement} />
         <PrivateRoute path="/Contact" component={AddContactPage} />
+        <PrivateRoute path="/wedding/:wid" component={WeddingPage} />
+        <PrivateRoute path="/venue/:vid" component={VenuePage} />
+        <PrivateRoute path="/user" component={UserProfilePage} />
       </Switch>
     </Router>
   );
