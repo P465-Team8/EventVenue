@@ -18,7 +18,7 @@ from api.HelloApiHandler import HelloApiHandler
 from flask_sqlalchemy import SQLAlchemy
 from flask_praetorian import Praetorian, auth_required, current_user
 from psycopg2.extras import DateRange, register_uuid
-from datetime import datetime
+from datetime import datetime, date
 from dateutil.parser import isoparse
 
 
@@ -257,7 +257,20 @@ def getwedding(wid):
             "user": result.User.serialize(),
             "venue": result.Venue.serialize()}, 200
 
-
+@app.route("/api/user/weddings", methods=['GET'])
+@auth_required
+def get_users_upcoming_weddings():
+    """
+    Returns the list of weddings the logged-in user is attending
+    """
+    results = db.session.query(Wedding, User)\
+                        .join(User, Wedding.host==User.id)\
+                        .join(Guestlist, Wedding.wid==Guestlist.wedding_id)\
+                        .filter(current_user().id==Guestlist.guest_id)\
+                        .filter(Wedding.wedding_datetime >= date.today()).all()
+    if results is None :
+        return {"status": "none"}, 200
+    return {"status": "some", "weddings":[{**result.User.serialize(), **result.Wedding.serialize()} for result in results]}
 
 @app.route("/api/bookmarkvenue/<vid>", methods=['POST'])
 @auth_required

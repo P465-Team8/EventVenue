@@ -18,7 +18,8 @@ class UserProfile extends React.Component {
             venueReservations: [],
             venueBookmarks: [],
             weddingBookmarks: [],
-            weddingReservations: []
+            weddingReservations: [],
+            upcomingWeddings: []
         };
     }
 
@@ -27,6 +28,7 @@ class UserProfile extends React.Component {
         this.getVenueReservations();
         this.getVenueBookmarks();
         this.getWeddingBookmarks();
+        this.getUpcomingWeddings();
     }
 
     getUserProfile() {
@@ -99,6 +101,26 @@ class UserProfile extends React.Component {
         .catch(function (error) {
             console.log(error);
         });
+    }
+
+    getUpcomingWeddings() {
+        var self = this;
+        axios
+        .get(backendRoot + `/api/user/weddings`, {
+            headers: {
+            Authorization: `${localStorage.getItem("token")}`,
+            },
+        })
+        .then(function (response) {
+            let newState = Object.assign({}, self.state);
+            if (response.data.message != "none"){
+                newState.upcomingWeddings = response.data.weddings;
+            }
+            self.setState(newState);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
         console.log(self.state);
     }
 
@@ -116,6 +138,10 @@ class UserProfile extends React.Component {
             <div>
                 <h2>Venue Reservations</h2>
                 {JSON.stringify(this.state.venueReservations)}
+            </div>
+            <div>
+                <h2>Upcoming Weddings</h2>
+                {JSON.stringify(this.state.upcomingWeddings)}
             </div>
             <div>
                 <h2>Wedding Bookmarks</h2>
