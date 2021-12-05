@@ -3,6 +3,8 @@ import { Container } from "react-bootstrap";
 import axios from "axios";
 import NavBar from "./Navbar";
 import classNames from "classnames";
+import BookmarkItem from "../BookmarkItem";
+import "./UserProfileContent.css";
 
 
 //var backendRoot = "https://lonelyweddings.herokuapp.com";
@@ -14,7 +16,9 @@ class UserProfile extends React.Component {
         this.state = {
             user: {firstName: "", lastName: ""},
             venueReservations: [],
-            venueBookmarks: []
+            venueBookmarks: [],
+            weddingBookmarks: [],
+            weddingReservations: []
         };
     }
 
@@ -22,6 +26,7 @@ class UserProfile extends React.Component {
         this.getUserProfile();
         this.getVenueReservations();
         this.getVenueBookmarks();
+        this.getWeddingBookmarks();
     }
 
     getUserProfile() {
@@ -33,12 +38,9 @@ class UserProfile extends React.Component {
             },
         })
         .then(function (response) {
-            self.setState({
-                user: {firstName: response.data["first_name"], lastName: response.data["last_name"]},
-                venueReservations: self.state.venueReservations,
-                venueBookmarks: self.state.venueBookmarks
-            });
-            console.log(self.state.user)
+            let newState = Object.assign({}, self.state);
+            newState.user = {firstName: response.data["first_name"], lastName: response.data["last_name"]};
+            self.setState(newState);
         })
         .catch(function (error) {
             console.log(error);
@@ -54,11 +56,9 @@ class UserProfile extends React.Component {
             },
         })
         .then(function (response) {
-            self.setState({
-                user: self.state.user,
-                venueReservations: JSON.stringify(response.data),
-                venueBookmarks: self.state.venueBookmarks
-            });
+            let newState = Object.assign({}, self.state);
+            newState.venueReservations = response.data.reservations;
+            self.setState(newState);
         })
         .catch(function (error) {
             console.log(error);
@@ -74,15 +74,32 @@ class UserProfile extends React.Component {
             },
         })
         .then(function (response) {
-            self.setState({
-                user: self.state.user,
-                venueReservations: self.state.venueReservations,
-                venueBookmarks: JSON.stringify(response.data)
-            });
+            let newState = Object.assign({}, self.state);
+            newState.venueBookmarks = response.data.venue_bookmarks;
+            self.setState(newState);
         })
         .catch(function (error) {
             console.log(error);
         });
+    }
+
+    getWeddingBookmarks() {
+        var self = this;
+        axios
+        .get(backendRoot + `/api/user/weddingbookmarks`, {
+            headers: {
+            Authorization: `${localStorage.getItem("token")}`,
+            },
+        })
+        .then(function (response) {
+            let newState = Object.assign({}, self.state);
+            newState.weddingBookmarks = response.data.wedding_bookmarks;
+            self.setState(newState);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+        console.log(self.state);
     }
 
     render() {
@@ -98,11 +115,25 @@ class UserProfile extends React.Component {
             </div>
             <div>
                 <h2>Venue Reservations</h2>
-                {this.state.venueReservations}
+                {JSON.stringify(this.state.venueReservations)}
+            </div>
+            <div>
+                <h2>Wedding Bookmarks</h2>
+                <div className="bRow">
+                    {this.state.weddingBookmarks.map((bm) => (
+                        <BookmarkItem name={bm.first_name + "\'s Wedding"} id={bm.wid} type="wedding"
+                        />
+                    ))}
+                </div>
             </div>
             <div>
                 <h2>Venue Bookmarks</h2>
-                {this.state.venueBookmarks}
+                <div className="bRow">
+                    {this.state.venueBookmarks.map((bm) => (
+                        <BookmarkItem name={bm.name} city={bm.city} state={bm.state} id={bm.vid} type="venue"
+                        />
+                    ))}
+                </div>
             </div>
         </Container>
         );

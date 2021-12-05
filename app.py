@@ -257,6 +257,8 @@ def getwedding(wid):
             "user": result.User.serialize(),
             "venue": result.Venue.serialize()}, 200
 
+
+
 @app.route("/api/bookmarkvenue/<vid>", methods=['POST'])
 @auth_required
 def bookmarkvenue(vid):
@@ -305,7 +307,7 @@ def get_users_venue_bookmarks():
     Returns the list of venues the logged in user has bookmarked
     """
     venues = db.session.query(Venue).join(VenueBookmark, VenueBookmark.bookmarked_venue==Venue.vid).filter_by(user_id=current_user().id).all()
-    return {"venue bookmarks": [v.serialize() for v in venues]}, 200
+    return {"venue_bookmarks": [v.serialize() for v in venues]}, 200
 
 @app.route("/api/bookmarkwedding/<wid>", methods=['POST'])
 @auth_required
@@ -346,14 +348,14 @@ def getWeddingBookmarkStatus(wid):
     else:
         return {"message": "Wedding does not exist"}, 400
 
-@app.route("/api/bookmarkwedding", methods=["GET"])
+@app.route("/api/user/weddingbookmarks", methods=["GET"])
 @auth_required
 def get_users_wedding_bookmarks():
     """
     Returns the list of weddings the logged in user has bookmarked
     """
-    weddings = db.session.query(Wedding).join(WeddingBookmark, WeddingBookmark.bookmarked_wedding==Wedding.wid).filter_by(user_id=current_user().id).all()
-    return {"wedding bookmarks": [wed.serialize() for wed in weddings]}, 200
+    results = db.session.query(Wedding, User).join(User, User.id==Wedding.host).join(WeddingBookmark, WeddingBookmark.bookmarked_wedding==Wedding.wid).filter_by(user_id=current_user().id).all()
+    return {"wedding_bookmarks": [{**result.Wedding.serialize(), **result.User.serialize()} for result in results]}, 200
 
 @app.route("/api/wedding/<wid>/guests", methods=['GET'])
 @auth_required
