@@ -4,6 +4,7 @@ import { Container, Button } from "react-bootstrap";
 import axios from "axios";
 import NavBar from "./Navbar";
 import VenueReserver from "./VenueReserver"
+import { MapContainer } from "./MapContainer";
 
 
 
@@ -130,6 +131,8 @@ class VenuePageContent extends React.Component {
         <div>Located at { this.state.street_address } { this.state.city }, { this.state.state} { this.state.zipcode } </div>
         
         <VenueReserver vid={this.props.vid} backendRoot={backendRoot}/>
+        <MapContainer street_address={this.state.street_address} city={this.state.city} state={this.state.state} zipcode={this.state.zipcode}/>
+        
 
       </Container>
     );
