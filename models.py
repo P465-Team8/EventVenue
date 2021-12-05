@@ -29,6 +29,14 @@ class User(db.Model):
     def __str__(self) -> str:
         return self.first_name + " " + self.last_name
 
+    def serialize(self) -> dict:
+        return {
+            "id": str(self.id),
+            "first name": self.first_name,
+            "last name": self.last_name,
+            "email": self.email
+        }        
+
     @classmethod
     def lookup(cls, email):
         """
@@ -195,7 +203,7 @@ class Guestlist(db.Model):
                         
     def serialize(self) -> dict:
         return {
-            "gid" : str(elf.gid),
+            "gid" : str(self.gid),
             "guest_id" : str(self.guest_id),
             "wedding_id" : str(self.wedding_id)}
 

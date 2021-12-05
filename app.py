@@ -30,7 +30,7 @@ api = Api(app)
 
 # Configure JWT
 app.config['SECRET_KEY'] = 'group8secret'
-app.config['JWT_ACCES_LIFESPAN'] = {'hours': 24}
+app.config['JWT_ACCESS_LIFESPAN'] = {'hours': 24}
 app.config['JWT_REFRESH_LIFESPAN'] = {'days': 30}
 guard = Praetorian()
 
@@ -54,6 +54,13 @@ def serve(path):
 @app.errorhandler(404)
 def not_found(e):
     return send_from_directory(app.static_folder,'index.html')
+
+@app.route("/api/test", methods=['GET'])
+def test():
+    """
+    Used to test if the server is running
+    """
+    return "Hello!", 200
 
 @app.route("/api/auth/register", methods=['POST'])
 def register():
@@ -161,9 +168,11 @@ def reserve_venue(vid):
         if create_reservation(request.form["start_date"], request.form["end_date"], uuid.UUID(vid), current_user().id):
             return {"message": "Reservation created"}, 201
         else:
+            print("Error: unable to add resevation to DB")
             return {"error": "Timeslot unavailable"}, 400
     else:
-        return {"error": "Form requires start_datetime, end_datetime, and venue_id"}, 400
+        print("Error: Invalid form")
+        return {"error": "Form requires start_date and end_date"}, 400
 
 @app.route("/api/venue/<vid>/reservations", methods=['GET'])
 @auth_required
@@ -195,19 +204,19 @@ def get_users_reservations():
     Returns the list of the given user's reservations
     Accepts "mode" query parameter with values "all", "future", or "past"
     """
-    reservations = db.session.query(Reservation).filter(Reservation.holder==current_user().id).all()
+    results = db.session.query(Reservation, Venue).filter(Reservation.res_venue == Venue.vid).filter(Reservation.holder==current_user().id).all()
     if not request.args["mode"]:
         # return all reservations for the venue
-        return {"reservations" : [res.serialize() for res in reservations]}, 200
+        return {"reservations" : [{**res.Reservation.serialize(), **res.Venue.serialize()} for res in results]}, 200
     elif request.args["mode"] == "all":
         # return all reservations for the venue
-        return {"reservations" : [res.serialize() for res in reservations]}, 200
+        return {"reservations" : [{**res.Reservation.serialize(), **res.Venue.serialize()} for res in results]}, 200
     elif request.args["mode"] == "future":
         # return reservations whose end date is in the future
-        return {"reservations" : [res.serialize() for res in reservations if res.res_dates.upper >= datetime.today().date() ]}, 200
+        return {"reservations" : [{**res.Reservation.serialize(), **res.Venue.serialize()} for res in results if res.Reservation.res_dates.upper >= datetime.today().date() ]}, 200
     elif request.args["mode"] == "past":
         # return reservations whose end date has passed
-        return {"reservations" : [res.serialize() for res in reservations if res.res_dates.upper < datetime.today().date() ]}, 200
+        return {"reservations" : [{**res.Reservation.serialize(), **res.Venue.serialize()} for res in results if res.Reservation.res_dates.upper < datetime.today().date() ]}, 200
     else:
         return {"error": f"{request.args['mode']} is an invalid mode"}, 400
 
@@ -218,8 +227,6 @@ def postwedding():
     Posts Wedding to Platform
     Post request requires "description", "is_public", "wedding_reservation", "wedding_datetime"
     """
-    #TODO Create reservation instance for wedding
-
     if request.form["description"] and request.form["is_public"] and request.form["wedding_reservation"] and request.form["wedding_datetime"]:
         if db.session.query(Reservation).filter_by(rid=UUID(request.form["wedding_reservation"])).count() == 1: 
             new_wedding = Wedding(host=current_user().id, description=request.form["description"], is_public=bool(request.form["is_public"]), wedding_reservation=UUID(request.form["wedding_reservation"]), wedding_datetime=isoparse(request.form["wedding_datetime"]))
@@ -230,6 +237,25 @@ def postwedding():
             return {"error": "reservation does not exist"}, 400
     else:
         return {"error": "Form requires description, description, is_public, wedding_reservation, wedding_datetime."}, 400
+
+@app.route("/api/wedding/<wid>", methods=['GET'])
+@auth_required
+def getwedding(wid):
+    """
+    Given a wedding id as a path argument, 
+    returns location, date, description, and host of the wedding
+    """
+    result = db.session.query(Wedding, User, Venue)\
+        .join(User, User.id==Wedding.host)\
+        .join(Reservation, Reservation.rid == Wedding.wedding_reservation and\
+                Reservation.holder == User.id)\
+        .join(Venue, Venue.vid == Reservation.res_venue)\
+        .filter(User.id == current_user().id).filter(Wedding.wid == wid).one_or_none()
+    if result is None:
+        return {"error":f"Wedding {wid} does not exist"}, 404
+    return {"wedding": result.Wedding.serialize(),
+            "user": result.User.serialize(),
+            "venue": result.Venue.serialize()}, 200
 
 @app.route("/api/bookmarkvenue/<vid>", methods=['POST'])
 @auth_required
@@ -255,6 +281,32 @@ def bookmarkvenue(vid):
     else:
         return {"message": "Venue does not exist"}, 400
 
+@app.route("/api/bookmarkvenue/<vid>", methods=['GET'])
+@auth_required
+def getVenueBookmarkStatus(vid):
+    """
+    Returns if the user has bookmarked the venue or not
+    """
+    # Determine if Venue Exists 
+    if db.session.query(Venue).filter_by(vid=vid).first():
+        # Determine if venue is bookmarked or not
+        bookmark_status = db.session.query(VenueBookmark).filter_by(bookmarked_venue=vid, user_id=current_user().id).one_or_none()
+        if bookmark_status is None:
+            return {"status": "false"}, 200
+        else:
+            return {"status": "true"}, 200
+    else:
+        return {"message": "Venue does not exist"}, 400
+
+@app.route("/api/user/venuebookmarks", methods=["GET"])
+@auth_required
+def get_users_venue_bookmarks():
+    """
+    Returns the list of venues the logged in user has bookmarked
+    """
+    venues = db.session.query(Venue).join(VenueBookmark, VenueBookmark.bookmarked_venue==Venue.vid).filter_by(user_id=current_user().id).all()
+    return {"venue bookmarks": [v.serialize() for v in venues]}, 200
+
 @app.route("/api/bookmarkwedding/<wid>", methods=['POST'])
 @auth_required
 def bookmark_wedding(wid):
@@ -277,6 +329,23 @@ def bookmark_wedding(wid):
         db.session.commit()
         return {"message":"Wedding unbookmarked"}, 201
 
+@app.route("/api/bookmarkwedding/<wid>", methods=['GET'])
+@auth_required
+def getWeddingBookmarkStatus(wid):
+    """
+    Returns if the user has bookmarked the wedding or not
+    """
+    # Determine if wedding Exists 
+    if db.session.query(Wedding).filter_by(wid=wid).first():
+        # Determine if wedding is bookmarked or not
+        bookmark_status = db.session.query(WeddingBookmark).filter_by(bookmarked_wedding=wid, user_id=current_user().id).one_or_none()
+        if bookmark_status is None:
+            return {"status": "false"}, 200
+        else:
+            return {"status": "true"}, 200
+    else:
+        return {"message": "Wedding does not exist"}, 400
+
 @app.route("/api/bookmarkwedding", methods=["GET"])
 @auth_required
 def get_users_wedding_bookmarks():
@@ -286,6 +355,37 @@ def get_users_wedding_bookmarks():
     weddings = db.session.query(Wedding).join(WeddingBookmark, WeddingBookmark.bookmarked_wedding==Wedding.wid).filter_by(user_id=current_user().id).all()
     return {"wedding bookmarks": [wed.serialize() for wed in weddings]}, 200
 
+@app.route("/api/wedding/<wid>/guests", methods=['GET'])
+@auth_required
+def getWeddingGuests(wid):
+    """
+    Returns if the list of users attending the given wedding
+    """
+    # Determine if Wedding Exists 
+    if db.session.query(Wedding).filter_by(wid=wid).first():
+        # Determine if venue is bookmarked or not
+        guests = db.session.query(User).join(Guestlist).filter_by(guest_id=User.id, wedding_id=wid).all()
+        return {"guests": [guest.serialize() for guest in guests]}, 200
+    else:
+        return {"message": "Wedding does not exist"}, 400
+
+@app.route("/api/wedding/<wid>/guests/status", methods=['GET'])
+@auth_required
+def checkAttendanceStatus(wid):
+    """
+    Returns if the logged-in user is attending the given wedding
+    """
+    # Determine if Wedding Exists 
+    if db.session.query(Wedding).filter_by(wid=wid).first():
+        # Determine if venue is bookmarked or not
+        attendanceStatus = db.session.query(Guestlist).filter_by(wedding_id=wid, guest_id=current_user().id).one_or_none()
+        if attendanceStatus is None:
+            return {"status": "false"}, 200
+        else:
+            return {"status": "true"}, 200
+    else:
+        return {"message": "Wedding does not exist"}, 400
+
 @app.route("/api/venuesearch/<search_terms>", methods=['GET'])
 @auth_required
 def venuesearch(search_terms):
@@ -294,7 +394,7 @@ def venuesearch(search_terms):
     searches in "name", "description", "state", or "city"
     
     """
-
+    noreps = []
     results = db.session.query(Venue).filter(Venue.name.ilike("%" + search_terms + "%")).all()
     if not results:
         results = (db.session.query(Venue).filter(Venue.description.ilike("%" + search_terms + "%")).all())
@@ -305,18 +405,31 @@ def venuesearch(search_terms):
                 if not results:
                     return {"message": "No venues found"}, 400 
                 else:
-                    return json.dumps([res.serialize() for res in results]), 201
+                    for res in results:
+                        if res not in noreps:
+                            noreps.append(res)
+                    return json.dumps([res.serialize() for res in noreps]), 201
             else:
                 results+=(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
+                for res in results:
+                    if res not in noreps:
+                        noreps.append(res)
+                return json.dumps([res.serialize() for res in noreps]), 201
         else:
             results+=(db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
             results+=(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
-            return json.dumps([res.serialize() for res in results]), 201
+            for res in results:
+                if res not in noreps:
+                    noreps.append(res)
+            return json.dumps([res.serialize() for res in noreps]), 201
     else:
         results+=(db.session.query(Venue).filter(Venue.description.ilike("%" + search_terms + "%")).all())
         results+=(db.session.query(Venue).filter(Venue.state.ilike("%" + search_terms + "%")).all())
         results+=(db.session.query(Venue).filter(Venue.city.ilike("%" + search_terms + "%")).all())
-        return json.dumps([res.serialize() for res in results]), 201
+        for res in results:
+                if res not in noreps:
+                    noreps.append(res)
+        return json.dumps([res.serialize() for res in noreps]), 201
 
 @app.route("/api/weddingsearch/<search_terms>", methods=['GET'])
 @auth_required
@@ -325,18 +438,20 @@ def weddingsearch(search_terms):
     Returns a list of public weddings 
     searches "description" 
     """
+
+    #.join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue)
     noreps = []
-    results = db.session.query(Wedding,User,Venue,Reservation).filter(Wedding.description.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+    results = db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Wedding.description.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
     if not results:
-        results = db.session.query(Wedding,User,Venue,Reservation).filter(User.last_name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+        results = db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(User.last_name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
         if not results:
-            results = db.session.query(Wedding,User,Venue,Reservation).filter(User.first_name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+            results = db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(User.first_name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
             if not results:
-                results = db.session.query(Wedding,User,Venue,Reservation).filter(Venue.name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+                results = db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
                 if not results:
-                    results = db.session.query(Wedding,User,Venue,Reservation).filter(Venue.city.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+                    results = db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.city.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
                     if not results: 
-                        results = db.session.query(Wedding,User,Venue,Reservation).filter(Venue.state.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+                        results = db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.state.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
                         if not results:
                             return {"message": "No weddings found"}, 400 
                         else:
@@ -345,45 +460,45 @@ def weddingsearch(search_terms):
                                     noreps.append(res)
                             return {"search_results" : [{**res.Wedding.serialize(), **res.User.serialize(), **res.Venue.serialize(), **res.Reservation.serialize()} for res in noreps]}, 201 
                     else:
-                        results += db.session.query(Wedding,User,Venue,Reservation).filter(Venue.state.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+                        results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.state.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
                         for res in results:
                             if res not in noreps:
                                 noreps.append(res)
                         return {"search_results" : [{**res.Wedding.serialize(), **res.User.serialize(), **res.Venue.serialize(), **res.Reservation.serialize()} for res in noreps]}, 201 
                 else:
-                    results += db.session.query(Wedding,User,Venue,Reservation).filter(Venue.city.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
-                    results += db.session.query(Wedding,User,Venue,Reservation).filter(Venue.state.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+                    results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.city.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+                    results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.state.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
                     for res in results:
                         if res not in noreps:
                             noreps.append(res)
                     return {"search_results" : [{**res.Wedding.serialize(), **res.User.serialize(), **res.Venue.serialize(), **res.Reservation.serialize()} for res in noreps]}, 201 
             else:
-                results += db.session.query(Wedding,User,Venue,Reservation).filter(Venue.name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()                
-                results += db.session.query(Wedding,User,Venue,Reservation).filter(Venue.city.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
-                results += db.session.query(Wedding,User,Venue,Reservation).filter(Venue.state.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+                results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()                
+                results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.city.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+                results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.state.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
                 for res in results:
                     if res not in noreps:
                         noreps.append(res)
                 return {"search_results" : [{**res.Wedding.serialize(), **res.User.serialize(), **res.Venue.serialize(), **res.Reservation.serialize()} for res in noreps]}, 201 
         else: 
-            results += db.session.query(Wedding,User,Venue,Reservation).filter(User.first_name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()    
-            results += db.session.query(Wedding,User,Venue,Reservation).filter(Venue.name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()                
-            results += db.session.query(Wedding,User,Venue,Reservation).filter(Venue.city.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
-            results += db.session.query(Wedding,User,Venue,Reservation).filter(Venue.state.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()                
+            results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(User.first_name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()    
+            results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()                
+            results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.city.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+            results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.state.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()                
             for res in results:
                 if res not in noreps:
                     noreps.append(res)
             return {"search_results" : [{**res.Wedding.serialize(), **res.User.serialize(), **res.Venue.serialize(), **res.Reservation.serialize()} for res in noreps]}, 201 
     else:
-        results += db.session.query(Wedding,User,Venue,Reservation).filter(User.last_name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
-        results += db.session.query(Wedding,User,Venue,Reservation).filter(User.first_name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()    
-        results += db.session.query(Wedding,User,Venue,Reservation).filter(Venue.name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()                
-        results += db.session.query(Wedding,User,Venue,Reservation).filter(Venue.city.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
-        results += db.session.query(Wedding,User,Venue,Reservation).filter(Venue.state.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()      
+        results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(User.last_name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+        results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(User.first_name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()    
+        results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.name.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()                
+        results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.city.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()
+        results += db.session.query(Wedding,User,Venue,Reservation).join(User,User.id==Wedding.host).join(Reservation, Reservation.rid==Wedding.wedding_reservation).join(Venue,Venue.vid==Reservation.res_venue).filter(Venue.state.ilike("%" + search_terms + "%"),Wedding.is_public==True).all()      
         for res in results:
             if res not in noreps:
                 noreps.append(res)
-        return {"search_results" : [{**res.Wedding.serialize(), **res.User.serialize(), **res.Venue.serialize(), **res.Reservation.serialize()} for res in noreps]}, 201 
+        return {"search_results" : [{**res.Wedding.serialize(), **res.User.serialize(), **res.Venue.serialize(), **res.Reservation.serialize()} for res in noreps]}, 201
 
 @app.route("/api/togglepublic/<wid>", methods=['POST'])
 @auth_required
