@@ -163,10 +163,12 @@ class HomePageContent extends React.Component {
               {this.state.data.map((dt) => (
                 <SearchWeddingItem
                   wid={dt.wid}
-                  host={dt.host}
+                  host={dt.first_name + " " + dt.last_name}
                   description={dt.description}
                   date={dt.date}
-                  is_public={dt.is_public}
+                  venue={dt.name}
+                  city={dt.city}
+                  state={dt.state}
                 />
               ))}
             </div>
