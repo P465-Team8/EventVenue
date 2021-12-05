@@ -8,8 +8,8 @@ import { MapContainer } from "./MapContainer";
 
 
 
-//var backendRoot = "https://lonelyweddings.herokuapp.com";
-var backendRoot = "http://localhost:5000"
+var backendRoot = "https://lonelyweddings.herokuapp.com";
+//var backendRoot = "http://localhost:5000"
 
 
 class VenuePageContent extends React.Component {

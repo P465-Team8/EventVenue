@@ -8,8 +8,8 @@ import { withRouter } from "react-router-dom";
 import VenueManagementItem from "../VenueManagementItem";
 import "../../App.css";
 
-//var backendRoot = "https://lonelyweddings.herokuapp.com";
-var backendRoot = "http://localhost:5000"
+var backendRoot = "https://lonelyweddings.herokuapp.com";
+//var backendRoot = "http://localhost:5000"
 
 class VenueManagementContent extends React.Component {
   constructor(props){

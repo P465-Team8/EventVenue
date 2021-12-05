@@ -10,8 +10,8 @@ import HostWeddingItem from "../HostWeddingItem";
 import "./UserProfileContent.css";
 
 
-//var backendRoot = "https://lonelyweddings.herokuapp.com";
-var backendRoot = "http://localhost:5000"
+var backendRoot = "https://lonelyweddings.herokuapp.com";
+//var backendRoot = "http://localhost:5000"
 
 class UserProfile extends React.Component {
     constructor(props){

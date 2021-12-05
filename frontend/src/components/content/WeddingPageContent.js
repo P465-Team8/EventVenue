@@ -5,8 +5,8 @@ import axios from "axios";
 import NavBar from "./Navbar";
 import {Link} from "react-router-dom";
 
-//var backendRoot = "https://lonelyweddings.herokuapp.com";
-var backendRoot = "http://localhost:5000"
+var backendRoot = "https://lonelyweddings.herokuapp.com";
+//var backendRoot = "http://localhost:5000"
 
 
 class WeddingPageContent extends React.Component {
