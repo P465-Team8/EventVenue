@@ -1,7 +1,9 @@
 import React from "react";
-import "./BookmarkItem.css";
+import "./content/UserProfileContent.css";
 import { useHistory } from "react-router";
-function BookmarkItem({ name, city, state, id, type }) {
+import axios from "axios";
+
+function BookmarkItem({ name, city, state, id, type, starttime, backendRoot }) {
   var history = useHistory();
   return (
     <div className="checkoutProduct">
@@ -10,7 +12,10 @@ function BookmarkItem({ name, city, state, id, type }) {
         {type === "venue" ? 
         <p className="checkoutProduct__price">
           <small>{city}, {state}</small>
-        </p> : ""}
+        </p> : 
+        <p className="checkoutProduct__price">
+        <small>{starttime}</small>
+      </p>}
         <button
           onClick={() => {
             history.push(`/${type}/${id}`);
@@ -19,7 +24,22 @@ function BookmarkItem({ name, city, state, id, type }) {
           View {type === "venue" ? "Venue" : "Wedding"}
         </button>
         <button
-            onClick={console.log("unbookmark")}
+            onClick={() => {
+              axios
+                .post(backendRoot + (type === "wedding" ? `/api/bookmarkwedding/${id}` : `/api/bookmarkvenue/${id}`), {}, {
+                  headers: {
+                    Authorization: `${localStorage.getItem("token")}`
+                  },
+                })
+                .then(function (response) {
+                  if (response.data.message === "Wedding unbookmarked" || response.data.message === "Venue unbookmarked"){
+                    {window.location.reload(false)}
+                  }
+                })
+                .catch(function (error) {
+                  console.log(error);
+                });
+            }}
         >
             Unbookmark
         </button>

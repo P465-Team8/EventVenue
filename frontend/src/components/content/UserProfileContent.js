@@ -4,6 +4,7 @@ import axios from "axios";
 import NavBar from "./Navbar";
 import classNames from "classnames";
 import BookmarkItem from "../BookmarkItem";
+import GuestWeddingItem from "../GuestWeddingItem";
 import "./UserProfileContent.css";
 
 
@@ -141,13 +142,17 @@ class UserProfile extends React.Component {
             </div>
             <div>
                 <h2>Upcoming Weddings</h2>
-                {JSON.stringify(this.state.upcomingWeddings)}
+                <div className="bRow">
+                    {this.state.upcomingWeddings.map((w) => (
+                        <GuestWeddingItem name={w.first_name + "\'s Wedding"} id={w.wid} starttime={w.date} backendRoot={backendRoot}/>
+                    ))}
+                </div>
             </div>
             <div>
                 <h2>Wedding Bookmarks</h2>
                 <div className="bRow">
                     {this.state.weddingBookmarks.map((bm) => (
-                        <BookmarkItem name={bm.first_name + "\'s Wedding"} id={bm.wid} type="wedding"
+                        <BookmarkItem name={bm.first_name + "\'s Wedding"} id={bm.wid} starttime={bm.date} type="wedding" backendRoot={backendRoot}
                         />
                     ))}
                 </div>
@@ -156,7 +161,7 @@ class UserProfile extends React.Component {
                 <h2>Venue Bookmarks</h2>
                 <div className="bRow">
                     {this.state.venueBookmarks.map((bm) => (
-                        <BookmarkItem name={bm.name} city={bm.city} state={bm.state} id={bm.vid} type="venue"
+                        <BookmarkItem name={bm.name} city={bm.city} state={bm.state} id={bm.vid} type="venue" backendRoot={backendRoot}
                         />
                     ))}
                 </div>
