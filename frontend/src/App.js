@@ -10,6 +10,10 @@ import ForgotPassword from "./ForgotPassword";
 import HomePage from "./HomePage";
 import AddVenuePage from "./AddVenuePage";
 import PrivateRoute from "./PrivateRoute";
+import AddWedding from "./components/content/AddWedding";
+import AddWeddingPage from "./AddWeddingPage";
+import VenueManagement from "./VenueManagement";
+import AddContactPage from "./AddContactPage";
 import WeddingPage from "./WeddingPage";
 import VenuePage from "./VenuePage";
 import UserProfilePage from "./UserProfilePage";
@@ -28,6 +32,9 @@ function App() {
         <Route path="/forgot-password" component={ForgotPassword} />
         <PrivateRoute path="/HomePage" component={HomePage} />
         <PrivateRoute path="/AddVenue" component={AddVenuePage} />
+        <PrivateRoute path="/Reservations/:rid" component={AddWeddingPage} />
+        <PrivateRoute path="/VenueManagement" component={VenueManagement} />
+        <PrivateRoute path="/Contact" component={AddContactPage} />
         <PrivateRoute path="/wedding/:wid" component={WeddingPage} />
         <PrivateRoute path="/venue/:vid" component={VenuePage} />
         <PrivateRoute path="/user" component={UserProfilePage} />
