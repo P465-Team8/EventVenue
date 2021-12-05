@@ -16,7 +16,7 @@ class VenueManagementContent extends React.Component {
       super(props);
       this.state = {
            venues: [],
-           reservations: {}
+           reservations: new Object()
       };
     }
 
@@ -35,6 +35,10 @@ class VenueManagementContent extends React.Component {
     .then(function (response) {
         let newState = Object.assign({}, self.state);
         if (response.status == 200){
+            for (var i = 0; i < response.data.venues.length; i++) {
+              let v = response.data.venues[i];
+              self.getVenueReservations(v.vid)
+            }
             newState.venues = response.data.venues;
         }
         self.setState(newState);
@@ -47,17 +51,18 @@ class VenueManagementContent extends React.Component {
   getVenueReservations(vid){
     var self = this;
     axios
-      .get(backendRoot + `/api/venue/${vid}?mode=future`, {
+      .get(backendRoot + `/api/venue/${vid}/reservations?mode=future`, {
           headers: {
           Authorization: `${localStorage.getItem("token")}`,
           },
       })
       .then(function (response) {
-          return(response.data.reservations)
+        let newState = Object.assign({}, self.state);
+        newState.reservations[vid] = response.data.reservations;
+        self.setState(newState);
       })
       .catch(function (error) {
         console.log(error);
-        return([]);
       });
   }
 
@@ -74,9 +79,16 @@ class VenueManagementContent extends React.Component {
             <h1>Your Venues</h1>
             {this.state.venues.length > 0 ? 
               <div align="center" className="bRow">
-                {this.state.venues.map((v) => (
-                  <VenueManagementItem name={v.name} guests={this.getUsersVenues(v.vid)} backendRoot={backendRoot} />
-                ))}
+                {this.state.venues.map((v) => {
+                  return <VenueManagementItem 
+                            name={v.name} 
+                            street={v.street_address} 
+                            city={v.city} 
+                            state={v.state} 
+                            zipcode={v.zipcode} 
+                            reservations={this.state.reservations[v.vid]} 
+                          />
+                })}
 
               </div> 
               : <div align="center">

@@ -142,7 +142,7 @@ def getvenue(vid):
 @auth_required
 def getUsersVenues():
     """
-    Returns all venues owned by the user
+    Returns all venues owned by the user along with their reservations
     """
     venues = db.session.query(Venue).filter_by(owner=current_user().id).all()
     return {"venues": [venue.serialize() for venue in venues]}, 200
