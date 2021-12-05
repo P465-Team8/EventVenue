@@ -174,6 +174,21 @@ def reserve_venue(vid):
         print("Error: Invalid form")
         return {"error": "Form requires start_date and end_date"}, 400
 
+@app.route("/api/user/reservations/<rid>", methods=['DELETE'])
+@auth_required
+def deleteReservation(rid):
+    """
+    Deletes the user's given reservation
+    """
+    reservation = db.session.query(Reservation).filter_by(rid=rid).filter_by(holder=current_user().id).one_or_none()
+    if reservation is None:
+        return {"message": "User does not have the given reservation"}, 200
+    db.session.delete(reservation)
+    db.session.commit()
+    return {"message": "Reservation erased"}, 200
+
+
+
 @app.route("/api/venue/<vid>/reservations", methods=['GET'])
 @auth_required
 def get_venue_reservations(vid):
@@ -256,6 +271,19 @@ def getwedding(wid):
     return {"wedding": result.Wedding.serialize(),
             "user": result.User.serialize(),
             "venue": result.Venue.serialize()}, 200
+
+@app.route("/api/wedding/<wid>", methods=['DELETE'])
+@auth_required
+def deleteWedding(wid):
+    """
+    Deletes the user's given wedding
+    """
+    wedding = db.session.query(Wedding).filter_by(wid=wid).filter_by(host=current_user().id).one_or_none()
+    if wedding is None:
+        return {"message": "User does not have the given wedding"}, 200
+    db.session.delete(wedding)
+    db.session.commit()
+    return {"message": "Wedding erased"}, 200
 
 @app.route("/api/user/weddings", methods=['GET'])
 @auth_required
@@ -383,6 +411,23 @@ def getWeddingGuests(wid):
         return {"guests": [guest.serialize() for guest in guests]}, 200
     else:
         return {"message": "Wedding does not exist"}, 400
+
+@app.route("/api/user/wedding", methods=['GET'])
+@auth_required
+def getUsersWedding():
+    """
+    Returns the list of weddings the logged in user is hosting
+    """
+    results = db.session.query(Wedding, User, Venue)\
+                        .join(User, Wedding.host==User.id)\
+                        .join(Reservation, Reservation.rid==Wedding.wedding_reservation)\
+                        .join(Venue, Venue.vid==Reservation.res_venue)\
+                        .filter(current_user().id==User.id)\
+                        .filter(Wedding.wedding_datetime >= date.today()).all()
+    if results is None :
+        return {"status": "none"}, 200
+    return {"status": "some", "weddings":[{**result.User.serialize(), **result.Wedding.serialize(), **result.Venue.serialize()} for result in results]}
+
 
 @app.route("/api/wedding/<wid>/guests/status", methods=['GET'])
 @auth_required

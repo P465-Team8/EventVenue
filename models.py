@@ -193,8 +193,8 @@ class Guestlist(db.Model):
     __tablename__ = 'guestlist'
 
     gid = db.Column(UUID(as_uuid=True), primary_key=True)
-    guest_id = db.Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
-    wedding_id = db.Column(UUID(as_uuid=True), ForeignKey('weddings.wid'), nullable=False)
+    guest_id = db.Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete="cascade"), nullable=False)
+    wedding_id = db.Column(UUID(as_uuid=True), ForeignKey('weddings.wid', ondelete="cascade"), nullable=False)
 
     def __init__(self, guest_id:UUID, wedding_id:UUID):
         self.gid = uuid.uuid4()
@@ -211,16 +211,17 @@ class Guestlist(db.Model):
         return f'<Guestlist {self.gid}>'
 
 class VenueBookmark(db.Model):
-    bookmarked_venue = db.Column(UUID(as_uuid=True), ForeignKey('venues.vid'),primary_key=True)
-    user_id = db.Column(UUID(as_uuid=True), ForeignKey('users.id'), primary_key=True)
+    bookmarked_venue = db.Column(UUID(as_uuid=True), ForeignKey('venues.vid', ondelete="cascade"),primary_key=True)
+    user_id = db.Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete="cascade"), primary_key=True)
+
 
     def __init__(self, bookmarked_venue:UUID, user_id:UUID):
         self.bookmarked_venue = bookmarked_venue
         self.user_id = user_id
 
 class WeddingBookmark(db.Model):
-    bookmarked_wedding = db.Column(UUID(as_uuid=True), ForeignKey('weddings.wid'),primary_key=True)
-    user_id = db.Column(UUID(as_uuid=True), ForeignKey('users.id'), primary_key=True)
+    bookmarked_wedding = db.Column(UUID(as_uuid=True), ForeignKey('weddings.wid', ondelete="cascade"),primary_key=True)
+    user_id = db.Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete="cascade"), primary_key=True)
 
     def __init__(self, bookmarked_wedding:UUID, user_id:UUID):
         self.bookmarked_wedding = bookmarked_wedding

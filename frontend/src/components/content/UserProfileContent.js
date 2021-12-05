@@ -5,6 +5,8 @@ import NavBar from "./Navbar";
 import classNames from "classnames";
 import BookmarkItem from "../BookmarkItem";
 import GuestWeddingItem from "../GuestWeddingItem";
+import VenueReservationItem from "../VenueReservationItem";
+import HostWeddingItem from "../HostWeddingItem";
 import "./UserProfileContent.css";
 
 
@@ -20,7 +22,8 @@ class UserProfile extends React.Component {
             venueBookmarks: [],
             weddingBookmarks: [],
             weddingReservations: [],
-            upcomingWeddings: []
+            upcomingWeddings: [],
+            personalWeddings: []
         };
     }
 
@@ -30,6 +33,7 @@ class UserProfile extends React.Component {
         this.getVenueBookmarks();
         this.getWeddingBookmarks();
         this.getUpcomingWeddings();
+        this.getUsersWedding();
     }
 
     getUserProfile() {
@@ -125,6 +129,27 @@ class UserProfile extends React.Component {
         console.log(self.state);
     }
 
+    getUsersWedding(){
+        var self = this;
+        axios
+        .get(backendRoot + `/api/user/wedding`, {
+            headers: {
+            Authorization: `${localStorage.getItem("token")}`,
+            },
+        })
+        .then(function (response) {
+            let newState = Object.assign({}, self.state);
+            if (response.data.message != "none"){
+                newState.personalWeddings = response.data.weddings;
+            }
+            self.setState(newState);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+        console.log(self.state);
+    }
+
     render() {
         return (
         <Container
@@ -137,8 +162,20 @@ class UserProfile extends React.Component {
                 
             </div>
             <div>
+                <h2>My Wedding</h2>
+                <div className="bRow">
+                    {this.state.personalWeddings.map((w) => (
+                        <HostWeddingItem vName={w.name} starttime={w.date} id={w.wid} backendRoot={backendRoot}/>
+                    ))}
+                </div>
+            </div>
+            <div>
                 <h2>Venue Reservations</h2>
-                {JSON.stringify(this.state.venueReservations)}
+                <div className="bRow">
+                    {this.state.venueReservations.map((r) => (
+                        <VenueReservationItem name={r.name} rid={r.rid} vid={r.vid} startDate={r.start_date} endDate={r.end_date}  backendRoot={backendRoot}/>
+                    ))}
+                </div>
             </div>
             <div>
                 <h2>Upcoming Weddings</h2>
