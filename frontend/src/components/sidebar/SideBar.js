@@ -53,22 +53,21 @@ class SideBar extends React.Component {
             </Nav.Link>
           </Nav.Item>
 
-          <Nav.Item>
-            <Nav.Link href="/">
+          <Nav.Item
+            className={
+              window.location.pathname === "/VenueManagement" ? "active" : ""
+            }
+          >
+            <Nav.Link href="/#/VenueManagement">
               <FontAwesomeIcon icon={faImage} className="mr-2" />
-              My Reservations
+              Venue Management
             </Nav.Link>
           </Nav.Item>
 
-          <Nav.Item>
-            <Nav.Link href="/">
-              <FontAwesomeIcon icon={faQuestion} className="mr-2" />
-              FAQ
-            </Nav.Link>
-          </Nav.Item>
-
-          <Nav.Item>
-            <Nav.Link href="/">
+          <Nav.Item
+            className={window.location.pathname === "/Contact" ? "active" : ""}
+          >
+            <Nav.Link href="/#/Contact">
               <FontAwesomeIcon icon={faPaperPlane} className="mr-2" />
               Contact
             </Nav.Link>

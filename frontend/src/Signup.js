@@ -34,7 +34,7 @@ export default function Signup() {
       .post("http://localhost:5000/api/auth/register", formData)
       .then(function (response) {
         console.log(response);
-        history.push("/");
+        history.push("/login");
       })
       .catch(function (error) {
         console.log(error);
