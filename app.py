@@ -138,6 +138,15 @@ def getvenue(vid):
         return {"error": f"Venue {vid} does not exist"}, 404
     return {"venue" : venue.serialize()}, 200
 
+@app.route("/api/user/venues", methods=['GET'])
+@auth_required
+def getUsersVenues():
+    """
+    Returns all venues owned by the user
+    """
+    venues = db.session.query(Venue).filter_by(owner=current_user().id).all()
+    return {"venues": [venue.serialize() for venue in venues]}, 200
+
 def create_reservation(start_date:str, end_date:str, venue_id:UUID, user_id:UUID) -> bool:
     """
     Reserves a venue for a given date range if it is available
@@ -149,7 +158,7 @@ def create_reservation(start_date:str, end_date:str, venue_id:UUID, user_id:UUID
     start_date = isoparse(start_date)
     end_date = isoparse(end_date)
     date_range = DateRange(lower=start_date.date(), upper=end_date.date(), bounds='[]')
-    if db.session.query(Reservation).filter(Reservation.res_dates.op("&&")(date_range)).count() > 0:
+    if db.session.query(Reservation).filter( Reservation.res_venue==venue_id, Reservation.res_dates.op("&&")(date_range)).count() > 0:
         return False
     reservation = Reservation(res_dates=date_range, res_venue=venue_id, holder=user_id)
     db.session.add(reservation)
@@ -196,19 +205,19 @@ def get_venue_reservations(vid):
     Returns the list of reservations for the given venue
     Accepts "mode" query parameter with values "all", "future", or "past"
     """
-    reservations = db.session.query(Reservation).filter_by(res_venue=vid).all()
+    results = db.session.query(Reservation, User).join(User, User.id == Reservation.holder).filter(Reservation.res_venue == vid).all()
     if not request.args["mode"]:
         # return all reservations for the venue
-        return {"reservations" : [res.serialize() for res in reservations]}, 200
+        return {"reservations" : [{**res.Reservation.serialize(), **res.User.serialize()} for res in results]}, 200
     elif request.args["mode"] == "all":
         # return all reservations for the venue
-        return {"reservations" : [res.serialize() for res in reservations]}, 200
+        return {"reservations" : [{**res.Reservation.serialize(), **res.User.serialize()} for res in results]}, 200
     elif request.args["mode"] == "future":
         # return reservations whose end date is in the future
-        return {"reservations" : [res.serialize() for res in reservations if res.res_dates.lower >= datetime.today().date() ]}, 200
+        return {"reservations" : [{**res.Reservation.serialize(), **res.User.serialize()} for res in results if res.Reservation.res_dates.lower >= datetime.today().date() ]}, 200
     elif request.args["mode"] == "past":
         # return reservations whose end date has passed
-        return {"reservations" : [res.serialize() for res in reservations if res.res_dates.lower < datetime.today().date() ]}, 200
+        return {"reservations" : [{**res.Reservation.serialize(), **res.User.serialize()} for res in results if res.Reservation.res_dates.lower < datetime.today().date() ]}, 200
     else:
         return {"error": f"{request.args['mode']} is an invalid mode"}, 400
 
