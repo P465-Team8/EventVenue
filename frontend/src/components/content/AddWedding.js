@@ -8,6 +8,9 @@ import { withRouter } from "react-router-dom";
 import "../../App.css";
 import { DateTimePickerComponent } from "@syncfusion/ej2-react-calendars";
 
+var backendRoot = "https://lonelyweddings.herokuapp.com";
+//var backendRoot = "http://localhost:5000"
+
 var formData1 = new FormData();
 class AddWedding extends React.Component {
   constructor(props) {
@@ -40,7 +43,7 @@ class AddWedding extends React.Component {
     formData1.append("wedding_datetime", wedding_date.toISOString());
 
     axios
-      .post("http://localhost:5000/api/postwedding", formData1, {
+      .post(backendRoot + "/api/postwedding", formData1, {
         headers: {
           Authorization: `${localStorage.getItem("token")}`,
         },
@@ -60,7 +63,7 @@ class AddWedding extends React.Component {
     const { history } = this.props;
     axios
       .get(
-        `http://localhost:5000/api/user/reservations?mode=future`,
+        backendRoot + `/api/user/reservations?mode=future`,
 
         {
           headers: {
